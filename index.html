@@ -1,0 +1,316 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#f5f7fb" />
+    <meta
+      name="description"
+      content="Dasbor admin ExamPlus untuk mengelola pelajaran dan alokasi siswa."
+    />
+    <title>ExamPlus | Exam operations</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div id="auth-screen" class="auth-screen">
+      <form id="auth-form" class="auth-card">
+        <div class="brand-mark">E</div>
+        <p class="eyebrow">EXAMPLUS ADMIN</p>
+        <h1>Welcome back</h1>
+        <p class="muted">Sign in with an authorized Supabase account.</p>
+        <label for="auth-email">Email address</label>
+        <input id="auth-email" type="email" autocomplete="username" required />
+        <label for="auth-password">Password</label>
+        <input id="auth-password" type="password" autocomplete="current-password" required />
+        <button class="button button-primary full-width" type="submit">Sign in</button>
+        <p id="auth-error" class="form-error" role="alert"></p>
+        <button id="open-settings-login" class="text-button" type="button">Configure Supabase</button>
+      </form>
+    </div>
+
+    <div id="app-shell" class="app-shell hidden">
+      <aside class="sidebar">
+        <a class="brand" href="#" aria-label="ExamPlus home">
+          <span class="brand-mark">E</span>
+          <span>exam<span class="brand-light">plus</span></span>
+        </a>
+        <p class="sidebar-label">WORKSPACE</p>
+        <nav class="nav-list" aria-label="Main navigation">
+          <button class="nav-item active" data-view="overview"><span class="nav-icon">⌂</span>Overview</button>
+          <button class="nav-item" data-view="students"><span class="nav-icon">▦</span>Students</button>
+          <button class="nav-item" data-view="rooms"><span class="nav-icon">⌗</span>Rooms</button>
+          <button class="nav-item" data-view="sessions"><span class="nav-icon">◷</span>Pelajaran</button>
+          <button class="nav-item" data-view="monitor"><span class="nav-icon">⌁</span>Live monitor</button>
+        </nav>
+        <div class="sidebar-bottom">
+          <div class="connection-card">
+            <span id="connection-dot" class="connection-dot"></span>
+            <div><strong>Secure workspace</strong><small id="connection-status">Checking connection…</small></div>
+          </div>
+          <button id="settings-button" class="nav-item"><span class="nav-icon">⚙</span>Settings</button>
+          <button id="sign-out-button" class="nav-item"><span class="nav-icon">↪</span>Sign out</button>
+          <p class="sidebar-foot">EXAM OPERATIONS · v1.0</p>
+        </div>
+      </aside>
+
+      <main class="main-content">
+        <header class="topbar">
+          <div>
+            <p class="eyebrow">EXAM OPERATIONS</p>
+            <h1 id="page-title">Overview</h1>
+            <p id="workspace-name" class="workspace-name hidden"></p>
+          </div>
+          <div class="topbar-actions">
+            <span id="current-user" class="user-label"></span>
+            <button id="top-settings-button" class="icon-button" aria-label="Open settings" title="Settings">⚙</button>
+            <button id="top-sign-out-button" class="icon-button" aria-label="Sign out" title="Sign out">↪</button>
+            <span id="top-avatar" class="avatar">A</span>
+          </div>
+        </header>
+
+        <section id="view-overview" class="view">
+          <div class="welcome-row">
+            <div>
+              <h2>Good exam day.</h2>
+              <p class="muted">Here’s what’s happening across your exam rooms.</p>
+            </div>
+            <button class="button button-primary" data-go="sessions">＋ Buat pelajaran</button>
+          </div>
+          <div class="stats-grid">
+            <article class="stat-card"><span class="stat-icon indigo">▦</span><p>Registered students</p><strong id="stat-students">—</strong><small>In the student directory</small></article>
+            <article class="stat-card"><span class="stat-icon mint">⌗</span><p>Exam rooms</p><strong id="stat-rooms">—</strong><small>Available for allocation</small></article>
+            <article class="stat-card"><span class="stat-icon amber">◷</span><p>Pelajaran aktif</p><strong id="stat-sessions">—</strong><small>Sedang menerima peserta</small></article>
+            <article class="stat-card"><span class="stat-icon rose">⌁</span><p>Peserta ujian</p><strong id="stat-in-exam">—</strong><small>Di semua pelajaran aktif</small></article>
+          </div>
+          <div class="content-grid">
+            <section class="panel panel-large">
+              <div class="panel-heading">
+                <div><h3>Pelajaran</h3><p class="muted">Atur jadwal dan status pelajaran</p></div>
+                <button class="text-button" data-go="sessions">Lihat semua <span aria-hidden="true">→</span></button>
+              </div>
+              <div id="overview-sessions" class="session-list"><div class="empty-state">Memuat pelajaran…</div></div>
+            </section>
+            <section class="panel">
+              <div class="panel-heading"><div><h3>Quick actions</h3><p class="muted">Common exam-day tasks</p></div></div>
+              <div class="quick-actions">
+                <button class="quick-action" data-go="students"><span class="quick-icon indigo">＋</span><span><strong>Import students</strong><small>Upload a CSV or Excel file</small></span><span class="arrow">→</span></button>
+                <button class="quick-action" data-go="rooms"><span class="quick-icon mint">⌗</span><span><strong>Prepare rooms</strong><small>Generate room access tokens</small></span><span class="arrow">→</span></button>
+                <button class="quick-action" data-go="monitor"><span class="quick-icon amber">⌁</span><span><strong>Open live monitor</strong><small>Review student activity</small></span><span class="arrow">→</span></button>
+              </div>
+            </section>
+          </div>
+        </section>
+
+        <section id="view-students" class="view hidden">
+          <div class="welcome-row">
+            <div><h2>Data siswa</h2><p class="muted">Unduh template, impor roster, atau tambahkan siswa satu per satu.</p></div>
+            <div class="button-row">
+              <input id="student-file" class="visually-hidden" type="file" accept=".csv,.xlsx,.xls" />
+              <button id="download-student-template-button" class="button button-secondary">↓ Template Excel</button>
+              <button id="open-student-form-button" class="button button-secondary">＋ Input manual</button>
+              <button id="import-students-button" class="button button-primary">↑ Impor siswa</button>
+            </div>
+          </div>
+          <div id="student-form-wrap" class="panel hidden">
+            <div class="panel-heading"><div><h3 id="student-form-title">Tambah siswa</h3><p class="muted">Ruang default digunakan sebagai saran saat mengatur alokasi pelajaran.</p></div><button id="close-student-form-button" class="icon-button" type="button" aria-label="Tutup">×</button></div>
+            <form id="student-form" class="form-grid">
+              <input id="student-id" type="hidden" />
+              <label>NIS<input id="student-nis" required maxlength="80" autocomplete="off" /></label>
+              <label>Nama lengkap<input id="student-name" required maxlength="160" /></label>
+              <label>Kelas asal<input id="student-class" required maxlength="80" /></label>
+              <label>Ruang default (opsional)<select id="student-room"><option value="">Belum ditentukan</option></select></label>
+              <div class="form-actions"><button id="cancel-student-form-button" class="button button-secondary" type="button">Batal</button><button id="save-student-button" class="button button-primary" type="submit">Simpan siswa</button></div>
+            </form>
+          </div>
+          <div class="panel">
+            <div class="panel-heading">
+              <div><h3>Daftar siswa <span id="student-count" class="count-pill">0</span></h3><p class="muted">Kolom Excel: nis, name, original_class, room (opsional). Nama ruang harus cocok dengan daftar ruang.</p></div>
+              <input id="student-search" class="search-input" type="search" placeholder="Search students…" aria-label="Search students" />
+            </div>
+            <div class="table-wrap">
+              <table><thead><tr><th>Siswa</th><th>NIS</th><th>Kelas asal</th><th>Ruang default</th><th></th></tr></thead><tbody id="students-table"></tbody></table>
+            </div>
+            <div id="students-empty" class="empty-state hidden">No students yet. Import a roster to get started.</div>
+          </div>
+        </section>
+
+        <section id="view-rooms" class="view hidden">
+          <div class="welcome-row">
+            <div><h2>Data ruang & pengawas</h2><p class="muted">Atur ruang sekali untuk ujian. Token ruang dipakai pengawas untuk masuk dan peserta untuk keluar; kode pengawas adalah kredensial terpisah.</p></div>
+            <div class="button-row">
+              <button id="open-room-form-button" class="button button-secondary">＋ Tambah ruang</button>
+              <button id="generate-tokens-button" class="button button-primary">⟳ Buat token 6 digit</button>
+            </div>
+          </div>
+          <div id="room-form-wrap" class="panel hidden">
+            <div class="panel-heading"><div><h3 id="room-form-title">Tambah ruang ujian</h3><p class="muted">Mengubah kode pengawas akan mengganti kode keluar; token peserta tidak berubah.</p></div><button id="cancel-room-form-button" class="icon-button" type="button" aria-label="Tutup">×</button></div>
+            <form id="room-form" class="form-grid">
+              <input id="room-id" type="hidden" />
+              <label>Nama ruang<input id="room-name" required maxlength="100" placeholder="Contoh: Ruang 1" /></label>
+              <label>Kode pengawas (rahasia tambahan)<input id="room-proctor-code" required minlength="8" maxlength="128" autocomplete="off" placeholder="Buat kode rahasia minimal 8 karakter" /></label>
+              <div class="form-actions"><button id="cancel-room-form-button-2" class="button button-secondary" type="button">Batal</button><button id="save-room-button" class="button button-primary" type="submit">Simpan ruang</button></div>
+            </form>
+          </div>
+          <div class="panel">
+            <div class="panel-heading"><div><h3>Daftar ruang</h3><p class="muted">Token ruang tidak berubah kecuali admin membuat token baru secara manual.</p></div></div>
+            <div class="table-wrap">
+              <table><thead><tr><th>Ruang</th><th>Kode pengawas</th><th>Token ruang / pengawas</th><th>Aksi</th></tr></thead><tbody id="rooms-table"></tbody></table>
+            </div>
+            <div id="rooms-empty" class="empty-state hidden">Belum ada ruang. Tambahkan ruang menggunakan formulir di atas.</div>
+          </div>
+          <div id="room-mapping-panel" class="panel">
+            <div class="panel-heading">
+              <div><h3>Pemetaan peserta</h3><p class="muted">Roster ini menjadi acuan yang sama bagi admin dan pengawas ruang.</p></div>
+              <button id="export-roster-button" class="button button-secondary">↓ Ekspor CSV</button>
+            </div>
+            <div class="mapping-toolbar">
+              <label for="mapping-session">Pelajaran<select id="mapping-session"><option value="">Pilih pelajaran</option></select></label>
+              <label for="mapping-room">Ruang<select id="mapping-room"><option value="">Semua ruang</option></select></label>
+            </div>
+            <div class="table-wrap">
+              <table><thead><tr><th>Ruang</th><th>Kursi</th><th>Nama peserta</th><th>NIS</th><th>Kelas asal</th><th>Pindahkan ruang</th></tr></thead><tbody id="mapping-table"></tbody></table>
+            </div>
+            <div id="mapping-empty" class="empty-state">Pilih pelajaran untuk membaca pemetaan ruang.</div>
+            <div id="mapping-count" class="table-footer"></div>
+          </div>
+        </section>
+
+        <section id="view-sessions" class="view hidden">
+          <div class="welcome-row">
+            <div><h2>Pelajaran</h2><p class="muted">Atur jadwal, peserta, dan ketersediaan pelajaran.</p></div>
+            <button id="new-session-button" class="button button-primary">＋ Buat pelajaran</button>
+          </div>
+          <div id="session-form-wrap" class="panel hidden">
+            <div class="panel-heading"><div><h3 id="session-form-title">Buat pelajaran</h3><p class="muted">Token pelajaran 6 digit dibuat otomatis. Untuk susulan, jadwal pelajaran dapat diedit.</p></div><button id="cancel-session-button" class="icon-button" aria-label="Tutup">×</button></div>
+            <form id="session-form" class="form-grid">
+              <input id="session-id" type="hidden" />
+              <label>Nama pelajaran<input id="session-title" required maxlength="120" placeholder="Contoh: Matematika" /></label>
+              <label>Google Forms URL<input id="session-url" type="url" required placeholder="https://docs.google.com/forms/…" /></label>
+              <label>Mulai (<span id="session-start-timezone">Asia/Jakarta</span>)<input id="session-start" type="datetime-local" required /></label>
+              <label>Selesai (<span id="session-end-timezone">Asia/Jakarta</span>)<input id="session-end" type="datetime-local" required /></label>
+              <p class="muted form-hint">Untuk pelajaran satu hari, pilih tanggal yang sama pada waktu mulai dan selesai.</p>
+              <div class="form-actions"><button class="button button-secondary" id="cancel-session-button-2" type="button">Batal</button><button id="save-session-button" class="button button-primary" type="submit">Simpan pelajaran</button></div>
+            </form>
+          </div>
+          <div class="panel">
+            <div class="panel-heading"><div><h3>Daftar pelajaran</h3><p class="muted">Bagikan token pelajaran kepada peserta; alokasi ruang diatur admin.</p></div></div>
+            <div id="sessions-list" class="session-list"><div class="empty-state">Memuat pelajaran…</div></div>
+          </div>
+        </section>
+
+        <section id="view-monitor" class="view hidden">
+          <div class="welcome-row">
+            <div><h2>Live monitor</h2><p class="muted">Realtime attendance, exam status, and violations.</p></div>
+            <button id="refresh-monitor-button" class="button button-secondary">⟳ Refresh</button>
+          </div>
+          <div class="panel monitor-toolbar">
+            <label for="monitor-session">Pelajaran</label>
+            <select id="monitor-session"><option value="">Pilih pelajaran</option></select>
+            <label for="monitor-room">Room</label>
+            <select id="monitor-room"><option value="">All rooms</option></select>
+            <span id="realtime-state" class="realtime-state"><span class="connection-dot"></span> Menunggu pelajaran</span>
+          </div>
+          <div class="stats-grid monitor-stats">
+            <article class="stat-card compact"><p>Not logged in</p><strong id="monitor-not-started">0</strong></article>
+            <article class="stat-card compact"><p>Logged in</p><strong id="monitor-logged-in">0</strong></article>
+            <article class="stat-card compact"><p>In exam</p><strong id="monitor-in-exam">0</strong></article>
+            <article class="stat-card compact"><p>Finished</p><strong id="monitor-finished">0</strong></article>
+            <article class="stat-card compact"><p>Blocked</p><strong id="monitor-blocked">0</strong></article>
+          </div>
+          <div class="panel">
+            <div class="panel-heading"><div><h3>Student activity</h3><p class="muted">Updated live from exam logs.</p></div><span id="monitor-total" class="count-pill">0 students</span></div>
+            <div class="table-wrap">
+              <table><thead><tr><th>Student</th><th>Room / seat</th><th>Status</th><th>Violations</th><th>Last seen</th><th>Action</th></tr></thead><tbody id="monitor-table"></tbody></table>
+            </div>
+            <div id="monitor-empty" class="empty-state">Pilih pelajaran untuk melihat aktivitas peserta.</div>
+          </div>
+          <p class="notice"><strong>Force logout:</strong> The current <code>exam_logs</code> schema has no command field or action table, so a client cannot safely distinguish a remote logout request from a real exam status. Force logout will be available when the participant command channel is added.</p>
+        </section>
+      </main>
+    </div>
+
+    <dialog id="settings-dialog" class="settings-dialog">
+      <div class="settings-heading">
+        <div class="panel-heading"><div><p class="eyebrow">PREFERENSI WORKSPACE</p><h2>Pengaturan admin</h2></div><button id="close-settings-button" class="icon-button" type="button" aria-label="Tutup">×</button></div>
+        <div class="settings-tabs" role="tablist" aria-label="Kategori pengaturan">
+          <button class="settings-tab active" type="button" role="tab" aria-selected="true" data-settings-tab="account">Akun</button>
+          <button class="settings-tab" type="button" role="tab" aria-selected="false" data-settings-tab="connection">Koneksi</button>
+          <button class="settings-tab" type="button" role="tab" aria-selected="false" data-settings-tab="workspace">Operasional</button>
+          <button class="settings-tab" type="button" role="tab" aria-selected="false" data-settings-tab="admins">Admin</button>
+        </div>
+      </div>
+      <section id="settings-account" class="settings-panel">
+        <div class="settings-section-title"><h3>Akun yang sedang masuk</h3><p class="muted">Ubah sandi untuk akun admin ini.</p></div>
+        <label for="settings-account-email">Email admin</label>
+        <input id="settings-account-email" type="email" readonly />
+        <form id="password-form">
+          <label for="current-password">Sandi saat ini</label>
+          <input id="current-password" type="password" autocomplete="current-password" required />
+          <label for="new-password">Sandi baru</label>
+          <input id="new-password" type="password" autocomplete="new-password" minlength="8" required />
+          <label for="confirm-password">Ulangi sandi baru</label>
+          <input id="confirm-password" type="password" autocomplete="new-password" minlength="8" required />
+          <p id="password-error" class="form-error" role="alert"></p>
+          <div class="form-actions"><button class="button button-primary" type="submit">Perbarui sandi</button></div>
+        </form>
+      </section>
+      <section id="settings-connection" class="settings-panel hidden">
+        <div class="settings-section-title"><h3>Koneksi Supabase</h3><p class="muted">Konfigurasi hanya disimpan di browser ini.</p></div>
+        <p class="muted settings-copy">Gunakan URL project dan kunci <strong>anon/public</strong>. Jangan masukkan kunci <code>service_role</code>.</p>
+        <form id="settings-form">
+          <label for="supabase-url">Project URL</label>
+          <input id="supabase-url" type="url" placeholder="https://project.supabase.co" required />
+          <label for="supabase-key">Anon/public key</label>
+          <input id="supabase-key" type="password" autocomplete="off" required />
+          <p id="settings-error" class="form-error" role="alert"></p>
+          <div class="form-actions"><button class="button button-secondary" type="button" id="cancel-settings-button">Batal</button><button id="save-settings-button" class="button button-primary" type="submit">Simpan & hubungkan</button></div>
+        </form>
+      </section>
+      <section id="settings-workspace" class="settings-panel hidden">
+        <div class="settings-section-title"><h3>Preferensi workspace</h3><p class="muted">Diterapkan untuk semua admin pada project ini.</p></div>
+        <form id="workspace-settings-form">
+          <label for="workspace-school-name">Nama sekolah atau workspace</label>
+          <input id="workspace-school-name" type="text" maxlength="120" placeholder="Contoh: SMA Nusantara" required />
+          <label for="workspace-timezone">Zona waktu</label>
+          <input id="workspace-timezone" type="text" maxlength="64" placeholder="Asia/Jakarta" required />
+          <p class="muted timezone-hint">Gunakan nama zona IANA, misalnya <code>Asia/Jakarta</code> atau <code>Asia/Makassar</code>.</p>
+          <label for="workspace-default-session">Pelajaran monitor default</label>
+          <select id="workspace-default-session"><option value="">Pilih pelajaran aktif otomatis</option></select>
+          <label for="workspace-refresh-interval">Interval refresh cadangan</label>
+          <select id="workspace-refresh-interval">
+            <option value="0">Nonaktif (Realtime saja)</option>
+            <option value="30">Setiap 30 detik</option>
+            <option value="60">Setiap 1 menit</option>
+            <option value="120">Setiap 2 menit</option>
+          </select>
+          <p id="workspace-settings-error" class="form-error" role="alert"></p>
+          <div class="form-actions"><button class="button button-primary" type="submit">Simpan preferensi</button></div>
+        </form>
+      </section>
+      <section id="settings-admins" class="settings-panel hidden">
+        <div class="settings-section-title"><h3>Kelola akses admin</h3><p class="muted">Undang admin lewat email atau cabut akses dashboard.</p></div>
+        <form id="admin-invite-form" class="admin-invite-form">
+          <label for="admin-invite-email">Email admin baru</label>
+          <div class="admin-invite-row"><input id="admin-invite-email" type="email" placeholder="admin@sekolah.sch.id" required /><button id="invite-admin-button" class="button button-primary" type="submit">Undang</button></div>
+          <p class="muted invite-hint">Undangan dikirim melalui Supabase Auth. SMTP project harus aktif agar email terkirim.</p>
+          <p id="admin-error" class="form-error" role="alert"></p>
+        </form>
+        <div class="admin-list-heading"><strong>Admin aktif</strong><button id="refresh-admins-button" class="text-button" type="button">Muat ulang</button></div>
+        <div id="admins-list" class="admins-list"><div class="empty-state">Muat daftar admin…</div></div>
+        <p class="notice admin-notice">Admin yang sedang digunakan dan admin terakhir tidak dapat dicabut aksesnya. Tindakan ini tidak menghapus akun Auth atau data pengguna.</p>
+      </section>
+    </dialog>
+
+    <div id="toast" class="toast" role="status" aria-live="polite"></div>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
+    <script src="./dashboard.js"></script>
+  </body>
+</html>

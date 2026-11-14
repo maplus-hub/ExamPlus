@@ -1,0 +1,5 @@
+[functions.participant-access]
+verify_jwt = true
+
+[functions.admin-management]
+verify_jwt = true
