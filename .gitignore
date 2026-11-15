@@ -1,1 +1,14 @@
 supabase/.temp/
+windows/participant/bin/
+windows/participant/obj/
+windows/proctor/bin/
+windows/proctor/obj/
+windows/proctor/.build/
+windows/proctor/publish/
+android/.idea/
+android/*/.gradle/
+android/*/.kotlin/
+android/*/.idea/
+android/*/local.properties
+android/*/build/
+android/*/app/build/

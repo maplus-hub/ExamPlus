@@ -1,0 +1,16 @@
+<Window x:Class="ExamPlus.Participant.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:wv2="clr-namespace:Microsoft.Web.WebView2.Wpf;assembly=Microsoft.Web.WebView2.Wpf"
+        Title="ExamPlus Peserta"
+        WindowStyle="None"
+        ResizeMode="NoResize"
+        WindowState="Maximized"
+        Background="#F3F5FA"
+        Loaded="Window_Loaded"
+        Deactivated="Window_Deactivated"
+        Closing="Window_Closing">
+    <Grid>
+        <wv2:WebView2 x:Name="ExamBrowser" />
+    </Grid>
+</Window>
