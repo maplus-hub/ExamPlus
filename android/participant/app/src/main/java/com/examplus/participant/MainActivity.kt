@@ -2,10 +2,20 @@ package com.examplus.participant
 
 import android.app.Activity
 import android.app.AlertDialog
+import android.content.BroadcastReceiver
+import android.content.Context
+import android.content.Intent
+import android.content.IntentFilter
 import android.graphics.Color
+import android.graphics.BitmapFactory
+import android.graphics.drawable.GradientDrawable
+import android.net.Uri
+import android.os.Build
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
+import android.provider.Settings
+import android.util.Base64
 import android.view.Gravity
 import android.view.View
 import android.view.WindowManager
@@ -16,6 +26,8 @@ import android.webkit.WebView
 import android.webkit.WebViewClient
 import android.widget.Button
 import android.widget.EditText
+import android.widget.FrameLayout
+import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.ScrollView
 import android.widget.TextView
@@ -26,19 +38,40 @@ import java.net.URL
 import java.util.concurrent.Executors
 
 class MainActivity : Activity() {
-    private val preferences by lazy { getSharedPreferences("examplus-participant", MODE_PRIVATE) }
     private val executor = Executors.newSingleThreadExecutor()
     private val handler = Handler(Looper.getMainLooper())
+    private var supabaseUrl = ""
+    private var anonKey = ""
     private var nis = ""
     private var participantToken = ""
     private var sessionId = ""
     private var webView: WebView? = null
     private var inExam = false
+    private var violationPaused = false
+    private var screenReceiverRegistered = false
+    private var resumeReceiverRegistered = false
+    private var awaitingOverlaySettings = false
+    private var pendingJoin: PendingJoin? = null
     private var lastFocusLossAt = 0L
+
+    private val screenOffReceiver = object : BroadcastReceiver() {
+        override fun onReceive(context: Context, intent: Intent) {
+            if (intent.action == Intent.ACTION_SCREEN_OFF && inExam) triggerViolation()
+        }
+    }
+
+    private val proctorResumeReceiver = object : BroadcastReceiver() {
+        override fun onReceive(context: Context, intent: Intent) {
+            val response = intent.getStringExtra(ViolationAlarmService.EXTRA_RESUME_RESPONSE)
+                ?.let { runCatching { JSONObject(it) }.getOrNull() }
+                ?: return
+            completeProctorResume(response)
+        }
+    }
 
     private val heartbeat = object : Runnable {
         override fun run() {
-            if (inExam) {
+            if (inExam && !violationPaused) {
                 sendEvent("heartbeat")
                 handler.postDelayed(this, HEARTBEAT_INTERVAL_MS)
             }
@@ -48,17 +81,41 @@ class MainActivity : Activity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         window.addFlags(WindowManager.LayoutParams.FLAG_SECURE)
-        if (configured()) showJoinScreen() else showConfigurationScreen()
+        try {
+            loadSharedConfig()
+            registerReceivers()
+            showJoinScreen()
+        } catch (error: Exception) {
+            showConfigurationErrorScreen(error.message ?: "Konfigurasi Supabase tidak dapat dibaca.")
+        }
     }
 
     override fun onUserLeaveHint() {
         super.onUserLeaveHint()
-        if (!inExam) return
-        val now = System.currentTimeMillis()
-        if (now - lastFocusLossAt < FOCUS_LOSS_DEBOUNCE_MS) return
-        lastFocusLossAt = now
-        sendEvent("focus_loss")
-        Toast.makeText(this, "Jangan keluar dari aplikasi ujian.", Toast.LENGTH_SHORT).show()
+        triggerViolation()
+    }
+
+    override fun onResume() {
+        super.onResume()
+        if (awaitingOverlaySettings) {
+            awaitingOverlaySettings = false
+            pendingJoin?.let { pending ->
+                if (Settings.canDrawOverlays(this)) {
+                    pendingJoin = null
+                    performJoin(pending.layout, pending.nis, pending.token)
+                } else {
+                    pendingJoin = null
+                    showJoinScreen("Izin tampil di atas aplikasi lain diperlukan untuk mengikuti ujian.")
+                }
+            }
+        }
+        pendingJoin?.let { pending ->
+            if (Settings.canDrawOverlays(this)) {
+                pendingJoin = null
+                performJoin(pending.layout, pending.nis, pending.token)
+            }
+        }
+        if (violationPaused) webView?.onPause() else webView?.onResume()
     }
 
     override fun onWindowFocusChanged(hasFocus: Boolean) {
@@ -68,8 +125,10 @@ class MainActivity : Activity() {
 
     @Deprecated("Back navigation is intentionally restricted while an exam is open.")
     override fun onBackPressed() {
-        if (inExam) {
-            Toast.makeText(this, "Minta bantuan pengawas untuk keluar dari ujian.", Toast.LENGTH_SHORT).show()
+        if (violationPaused) {
+            Toast.makeText(this, "Masukkan kode pengawas untuk melanjutkan ujian.", Toast.LENGTH_SHORT).show()
+        } else if (inExam) {
+            triggerViolation()
         } else {
             super.onBackPressed()
         }
@@ -77,59 +136,166 @@ class MainActivity : Activity() {
 
     override fun onDestroy() {
         handler.removeCallbacksAndMessages(null)
+        if (screenReceiverRegistered) {
+            unregisterReceiver(screenOffReceiver)
+            screenReceiverRegistered = false
+        }
+        if (resumeReceiverRegistered) {
+            unregisterReceiver(proctorResumeReceiver)
+            resumeReceiverRegistered = false
+        }
         webView?.destroy()
         executor.shutdown()
         super.onDestroy()
     }
 
-    private fun configured(): Boolean =
-        !preferences.getString(KEY_PROJECT_URL, null).isNullOrBlank() &&
-            !preferences.getString(KEY_ANON_KEY, null).isNullOrBlank()
+    private fun loadSharedConfig() {
+        val config = assets.open(CONFIG_ASSET).bufferedReader().use { JSONObject(it.readText()) }
+        val url = config.optString("url").trim().trimEnd('/')
+        val key = config.optString("anonKey").trim()
+        val parsed = runCatching { URL(url) }.getOrNull()
+        if (parsed?.protocol != "https" || parsed.host.isNullOrBlank() ||
+            parsed.host.contains("your_project_id", ignoreCase = true) ||
+            !parsed.userInfo.isNullOrBlank() || parsed.path.isNotEmpty() ||
+            !parsed.query.isNullOrBlank() || !parsed.ref.isNullOrBlank()
+        ) {
+            throw IllegalStateException("URL project di config/supabase.json tidak valid.")
+        }
+        if (key.isBlank() || key.contains("YOUR_SUPABASE")) {
+            throw IllegalStateException("Isi anonKey pada config/supabase.json lalu bangun ulang APK.")
+        }
+        if (isServiceRoleKey(key)) {
+            throw IllegalStateException("Gunakan anon/public key di config/supabase.json, bukan service_role.")
+        }
+        supabaseUrl = url
+        anonKey = key
+    }
 
-    private fun showConfigurationScreen() {
-        val layout = createPage("Pengaturan aplikasi", "Hubungkan aplikasi ke project Supabase sekolah.")
-        val urlInput = input("Project URL, contoh https://project.supabase.co").apply {
-            setText(preferences.getString(KEY_PROJECT_URL, ""))
-            inputType = android.text.InputType.TYPE_CLASS_TEXT or android.text.InputType.TYPE_TEXT_VARIATION_URI
-        }
-        val keyInput = input("Anon/public key").apply {
-            setText(preferences.getString(KEY_ANON_KEY, ""))
-            inputType = android.text.InputType.TYPE_CLASS_TEXT or android.text.InputType.TYPE_TEXT_VARIATION_PASSWORD
-        }
-        layout.addView(urlInput)
-        layout.addView(keyInput)
-        layout.addView(actionButton("Simpan pengaturan") {
-            val projectUrl = urlInput.text.toString().trim().trimEnd('/')
-            val anonKey = keyInput.text.toString().trim()
-            val parsed = runCatching { URL(projectUrl) }.getOrNull()
-            if (parsed?.protocol != "https" || anonKey.isBlank()) {
-                message("Masukkan URL HTTPS project dan anon/public key.")
-                return@actionButton
-            }
-            preferences.edit()
-                .putString(KEY_PROJECT_URL, projectUrl)
-                .putString(KEY_ANON_KEY, anonKey)
-                .apply()
-            showJoinScreen()
-        })
+    private fun isServiceRoleKey(key: String): Boolean {
+        val payload = key.split(".").getOrNull(1) ?: return false
+        return runCatching {
+            val decoded = Base64.decode(payload, Base64.URL_SAFE or Base64.NO_WRAP or Base64.NO_PADDING)
+            JSONObject(String(decoded, Charsets.UTF_8)).optString("role") == "service_role"
+        }.getOrDefault(false)
+    }
+
+    private fun showConfigurationErrorScreen(detail: String) {
+        val layout = createPage("Konfigurasi belum siap", "Koneksi Supabase dipakai bersama seluruh aplikasi ExamPlus.")
+        layout.addView(messageText(detail, ERROR))
+        layout.addView(messageText(
+            "Perbarui config/supabase.json di folder proyek, lalu bangun ulang dan pasang APK.",
+            MUTED
+        ))
         setContentView(pageScroll(layout))
     }
 
     private fun showJoinScreen(error: String? = null) {
         inExam = false
         webView = null
-        val layout = createPage("Masuk ujian", "Masukkan NIS dan token pelajaran dari admin.")
+        val content = LinearLayout(this).apply {
+            orientation = LinearLayout.VERTICAL
+            setPadding(dp(22), dp(28), dp(22), dp(28))
+            setBackgroundColor(PAGE)
+        }
+
+        val hero = LinearLayout(this).apply {
+            orientation = LinearLayout.HORIZONTAL
+            gravity = Gravity.CENTER_VERTICAL
+            setPadding(dp(18), dp(20), dp(18), dp(20))
+            background = GradientDrawable(
+                GradientDrawable.Orientation.TL_BR,
+                intArrayOf(GREEN_DARK, GREEN)
+            ).apply { cornerRadius = dp(24).toFloat() }
+            elevation = dp(5).toFloat()
+        }
+        val heroCopy = LinearLayout(this).apply {
+            orientation = LinearLayout.VERTICAL
+            gravity = Gravity.CENTER_VERTICAL
+        }
+        heroCopy.addView(TextView(this).apply {
+            text = "EXAMPLUS  ·  PORTAL PESERTA"
+            textSize = 10f
+            letterSpacing = 0.1f
+            setTextColor(0xFFD8EEE4.toInt())
+            setTypeface(typeface, android.graphics.Typeface.BOLD)
+        })
+        heroCopy.addView(TextView(this).apply {
+            text = "Ujian dimulai dengan fokus."
+            textSize = 21f
+            setTextColor(Color.WHITE)
+            setPadding(0, dp(9), 0, dp(6))
+            setTypeface(typeface, android.graphics.Typeface.BOLD)
+        })
+        heroCopy.addView(TextView(this).apply {
+            text = "Madrasah Aliyah Plus Sunan Giri · Salatiga"
+            textSize = 11f
+            setTextColor(0xFFD8EEE4.toInt())
+        })
+        hero.addView(heroCopy, LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f))
+
+        val logoTile = FrameLayout(this).apply {
+            background = roundedBackground(Color.WHITE, 0, 18f)
+            setPadding(dp(5), dp(5), dp(5), dp(5))
+        }
+        val logo = assets.open(LOGO_ASSET).use { BitmapFactory.decodeStream(it) }
+        logoTile.addView(ImageView(this).apply {
+            setImageBitmap(logo)
+            scaleType = ImageView.ScaleType.FIT_CENTER
+            contentDescription = "Logo Madrasah Aliyah Plus Sunan Giri Salatiga"
+        }, FrameLayout.LayoutParams(
+            FrameLayout.LayoutParams.MATCH_PARENT,
+            FrameLayout.LayoutParams.MATCH_PARENT
+        ))
+        hero.addView(logoTile, LinearLayout.LayoutParams(dp(88), dp(88)).apply { leftMargin = dp(12) })
+        content.addView(hero)
+
+        val formCard = LinearLayout(this).apply {
+            orientation = LinearLayout.VERTICAL
+            setPadding(dp(22), dp(22), dp(22), dp(20))
+            background = roundedBackground(Color.WHITE, 0xFFE2EAE5.toInt(), 22f)
+            elevation = dp(4).toFloat()
+        }
+        formCard.addView(TextView(this).apply {
+            text = "Masuk peserta"
+            textSize = 23f
+            setTextColor(INK)
+            setTypeface(typeface, android.graphics.Typeface.BOLD)
+        })
+        formCard.addView(TextView(this).apply {
+            text = "Gunakan NIS dan token pelajaran dari admin."
+            textSize = 13f
+            setTextColor(MUTED)
+            setPadding(0, dp(5), 0, dp(13))
+        })
         val nisInput = input("NIS").apply {
             inputType = android.text.InputType.TYPE_CLASS_TEXT
             filters = arrayOf(android.text.InputFilter.LengthFilter(64))
+            styleLoginInput()
         }
         val tokenInput = input("Token pelajaran 6 digit").apply {
             inputType = android.text.InputType.TYPE_CLASS_NUMBER
             filters = arrayOf(android.text.InputFilter.LengthFilter(6))
+            styleLoginInput()
         }
-        layout.addView(nisInput)
-        layout.addView(tokenInput)
-        if (!error.isNullOrBlank()) layout.addView(messageText(error, ERROR))
+        formCard.addView(TextView(this).apply {
+            text = "NOMOR INDUK SISWA (NIS)"
+            textSize = 10f
+            letterSpacing = 0.07f
+            setTextColor(INK)
+            setTypeface(typeface, android.graphics.Typeface.BOLD)
+            setPadding(0, dp(5), 0, dp(2))
+        })
+        formCard.addView(nisInput)
+        formCard.addView(TextView(this).apply {
+            text = "TOKEN PELAJARAN"
+            textSize = 10f
+            letterSpacing = 0.07f
+            setTextColor(INK)
+            setTypeface(typeface, android.graphics.Typeface.BOLD)
+            setPadding(0, dp(7), 0, dp(2))
+        })
+        formCard.addView(tokenInput)
+        if (!error.isNullOrBlank()) formCard.addView(messageText(error, ERROR))
         val joinButton = actionButton("Masuk dan mulai ujian") {
             val enteredNis = nisInput.text.toString().trim()
             val enteredToken = tokenInput.text.toString().trim()
@@ -137,27 +303,58 @@ class MainActivity : Activity() {
                 message("Masukkan NIS dan token pelajaran 6 digit yang valid.")
                 return@actionButton
             }
-            nis = enteredNis
-            participantToken = enteredToken
-            setLoading(layout, true)
-            sendRequest(
-                JSONObject()
-                    .put("action", "join")
-                    .put("nis", nis)
-                    .put("participant_token", participantToken)
-            ) { response, failure ->
-                setLoading(layout, false)
-                if (failure != null) {
-                    showJoinScreen(failure)
-                } else {
-                    runCatching { showExamScreen(response ?: JSONObject()) }
-                        .onFailure { showJoinScreen(it.message ?: "Respons server tidak valid.") }
-                }
+            if (!Settings.canDrawOverlays(this)) {
+                pendingJoin = PendingJoin(enteredNis, enteredToken, formCard)
+                AlertDialog.Builder(this)
+                    .setTitle("Izin tampilan overlay diperlukan")
+                    .setMessage("Agar permintaan kode pengawas tetap terlihat di atas aplikasi lain saat ujian dijeda, izinkan ExamPlus tampil di atas aplikasi lain.")
+                    .setNegativeButton("Batal") { _, _ -> pendingJoin = null }
+                    .setPositiveButton("Buka pengaturan") { _, _ ->
+                        awaitingOverlaySettings = true
+                        startActivity(
+                            Intent(
+                                Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
+                                Uri.parse("package:$packageName")
+                            )
+                        )
+                    }
+                    .show()
+                return@actionButton
             }
-        }.apply { tag = JOIN_BUTTON_TAG }
-        layout.addView(joinButton)
-        layout.addView(actionButton("Pengaturan koneksi", secondary = true) { showConfigurationDialog() })
-        setContentView(pageScroll(layout))
+            performJoin(formCard, enteredNis, enteredToken)
+        }.apply {
+            tag = JOIN_BUTTON_TAG
+            text = "Masuk ke ujian  →"
+            textSize = 15f
+            minHeight = dp(54)
+            background = roundedBackground(GREEN, 0, 14f)
+            elevation = dp(2).toFloat()
+        }
+        formCard.addView(joinButton)
+        formCard.addView(TextView(this).apply {
+            text = "Koneksi sekolah siap digunakan"
+            textSize = 11f
+            gravity = Gravity.CENTER
+            setTextColor(MUTED)
+            setPadding(0, dp(14), 0, 0)
+        })
+        content.addView(formCard, LinearLayout.LayoutParams(
+            LinearLayout.LayoutParams.MATCH_PARENT,
+            LinearLayout.LayoutParams.WRAP_CONTENT
+        ).apply { topMargin = dp(16) })
+        content.addView(TextView(this).apply {
+            text = "Token ruang hanya digunakan saat keluar melalui pengawas."
+            textSize = 11f
+            gravity = Gravity.CENTER
+            setTextColor(MUTED)
+            setPadding(dp(8), dp(15), dp(8), 0)
+        })
+        val scroll = ScrollView(this).apply {
+            setBackgroundColor(PAGE)
+            isFillViewport = true
+            addView(content)
+        }
+        setContentView(scroll)
     }
 
     private fun showExamScreen(response: JSONObject) {
@@ -168,6 +365,8 @@ class MainActivity : Activity() {
 
         sessionId = session.getString("id")
         inExam = true
+        violationPaused = false
+        lastFocusLossAt = 0L
         val root = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
             setBackgroundColor(Color.WHITE)
@@ -241,9 +440,90 @@ class MainActivity : Activity() {
 
     private fun sendEvent(action: String) {
         sendRequest(eventPayload(action)) { _, failure ->
-            if (failure != null) runOnUiThread {
+            if (failure != null) {
                 Toast.makeText(this, failure, Toast.LENGTH_SHORT).show()
             }
+        }
+    }
+
+    private fun triggerViolation() {
+        if (!inExam || violationPaused) return
+        val now = System.currentTimeMillis()
+        if (now - lastFocusLossAt < FOCUS_LOSS_DEBOUNCE_MS) return
+        lastFocusLossAt = now
+        violationPaused = true
+        webView?.onPause()
+        handler.removeCallbacks(heartbeat)
+        startViolationAlarm()
+    }
+
+    private fun performJoin(layout: LinearLayout, enteredNis: String, enteredToken: String) {
+        nis = enteredNis
+        participantToken = enteredToken
+        setLoading(layout, true)
+        sendRequest(
+            JSONObject()
+                .put("action", "join")
+                .put("nis", nis)
+                .put("participant_token", participantToken)
+        ) { response, failure ->
+            setLoading(layout, false)
+            if (failure != null) {
+                if (response?.optBoolean("requires_proctor") == true) {
+                    sessionId = response.getJSONObject("session").getString("id")
+                    violationPaused = true
+                    startViolationAlarm(response.optBoolean("alarm_active", true), recordViolation = false)
+                    showJoinScreen(failure)
+                } else {
+                    showJoinScreen(failure)
+                }
+            } else {
+                runCatching { showExamScreen(response ?: JSONObject()) }
+                    .onFailure { showJoinScreen(it.message ?: "Respons server tidak valid.") }
+            }
+        }
+    }
+
+    private fun startViolationAlarm(alarmInitiallyActive: Boolean = true, recordViolation: Boolean = true) {
+        val intent = Intent(this, ViolationAlarmService::class.java)
+            .setAction(ViolationAlarmService.ACTION_START)
+            .putExtra(ViolationAlarmService.EXTRA_SUPABASE_URL, supabaseUrl)
+            .putExtra(ViolationAlarmService.EXTRA_ANON_KEY, anonKey)
+            .putExtra(ViolationAlarmService.EXTRA_NIS, nis)
+            .putExtra(ViolationAlarmService.EXTRA_PARTICIPANT_TOKEN, participantToken)
+            .putExtra(ViolationAlarmService.EXTRA_SESSION_ID, sessionId)
+            .putExtra(ViolationAlarmService.EXTRA_ALARM_ACTIVE, alarmInitiallyActive)
+            .putExtra(ViolationAlarmService.EXTRA_RECORD_VIOLATION, recordViolation)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) startForegroundService(intent) else startService(intent)
+    }
+
+    private fun completeProctorResume(response: JSONObject) {
+        if (webView == null) {
+            showExamScreen(response)
+            return
+        }
+        violationPaused = false
+        lastFocusLossAt = 0L
+        webView?.onResume()
+        applyImmersiveMode()
+        handler.removeCallbacks(heartbeat)
+        handler.postDelayed(heartbeat, HEARTBEAT_INTERVAL_MS)
+    }
+
+    private fun registerReceivers() {
+        val screenFilter = IntentFilter(Intent.ACTION_SCREEN_OFF)
+        if (Build.VERSION.SDK_INT >= 33) {
+            registerReceiver(screenOffReceiver, screenFilter, Context.RECEIVER_NOT_EXPORTED)
+            screenReceiverRegistered = true
+            registerReceiver(proctorResumeReceiver, IntentFilter(ViolationAlarmService.ACTION_PROCTOR_RESUMED), Context.RECEIVER_NOT_EXPORTED)
+            resumeReceiverRegistered = true
+        } else {
+            @Suppress("DEPRECATION")
+            registerReceiver(screenOffReceiver, screenFilter)
+            screenReceiverRegistered = true
+            @Suppress("DEPRECATION")
+            registerReceiver(proctorResumeReceiver, IntentFilter(ViolationAlarmService.ACTION_PROCTOR_RESUMED))
+            resumeReceiverRegistered = true
         }
     }
 
@@ -255,7 +535,9 @@ class MainActivity : Activity() {
 
     private fun leaveExam() {
         handler.removeCallbacks(heartbeat)
+        stopService(Intent(this, ViolationAlarmService::class.java))
         inExam = false
+        violationPaused = false
         runCatching { stopLockTask() }
         webView?.apply {
             stopLoading()
@@ -273,43 +555,11 @@ class MainActivity : Activity() {
         showJoinScreen()
     }
 
-    private fun showConfigurationDialog() {
-        val urlInput = input("Project URL").apply { setText(preferences.getString(KEY_PROJECT_URL, "")) }
-        val keyInput = input("Anon/public key").apply {
-            setText(preferences.getString(KEY_ANON_KEY, ""))
-            inputType = android.text.InputType.TYPE_CLASS_TEXT or android.text.InputType.TYPE_TEXT_VARIATION_PASSWORD
-        }
-        val content = LinearLayout(this).apply {
-            orientation = LinearLayout.VERTICAL
-            setPadding(dp(20), dp(8), dp(20), 0)
-            addView(urlInput)
-            addView(keyInput)
-        }
-        AlertDialog.Builder(this)
-            .setTitle("Pengaturan koneksi")
-            .setView(content)
-            .setNegativeButton("Batal", null)
-            .setPositiveButton("Simpan") { _, _ ->
-                val url = urlInput.text.toString().trim().trimEnd('/')
-                val key = keyInput.text.toString().trim()
-                val parsed = runCatching { URL(url) }.getOrNull()
-                if (parsed?.protocol != "https" || key.isBlank()) {
-                    message("URL HTTPS dan anon/public key wajib diisi.")
-                } else {
-                    preferences.edit().putString(KEY_PROJECT_URL, url).putString(KEY_ANON_KEY, key).apply()
-                    showJoinScreen()
-                }
-            }
-            .show()
-    }
-
     private fun sendRequest(payload: JSONObject, callback: (JSONObject?, String?) -> Unit) {
-        val projectUrl = preferences.getString(KEY_PROJECT_URL, "").orEmpty()
-        val anonKey = preferences.getString(KEY_ANON_KEY, "").orEmpty()
         executor.execute {
             var connection: HttpURLConnection? = null
             try {
-                connection = (URL("$projectUrl/functions/v1/participant-access").openConnection() as HttpURLConnection).apply {
+                connection = (URL("$supabaseUrl/functions/v1/participant-access").openConnection() as HttpURLConnection).apply {
                     requestMethod = "POST"
                     connectTimeout = NETWORK_TIMEOUT_MS
                     readTimeout = NETWORK_TIMEOUT_MS
@@ -324,7 +574,7 @@ class MainActivity : Activity() {
                 val body = stream?.bufferedReader()?.use { it.readText() }.orEmpty()
                 val json = runCatching { JSONObject(body) }.getOrNull() ?: JSONObject()
                 val failure = if (status in 200..299) null else json.optString("error").ifBlank { "Permintaan gagal (HTTP $status)." }
-                runOnUiThread { callback(if (failure == null) json else null, failure) }
+                runOnUiThread { callback(json, failure) }
             } catch (error: Exception) {
                 runOnUiThread { callback(null, error.localizedMessage ?: "Tidak dapat menghubungi server.") }
             } finally {
@@ -413,6 +663,20 @@ class MainActivity : Activity() {
         setPadding(0, 0, 0, dp(12))
     }
 
+    private fun EditText.styleLoginInput() {
+        minHeight = dp(54)
+        setPadding(dp(15), dp(10), dp(15), dp(10))
+        background = roundedBackground(Color.WHITE, 0xFFDCE7E1.toInt(), 14f)
+        backgroundTintList = null
+    }
+
+    private fun roundedBackground(fillColor: Int, strokeColor: Int, radiusDp: Float): GradientDrawable =
+        GradientDrawable().apply {
+            setColor(fillColor)
+            cornerRadius = dp(radiusDp.toInt()).toFloat()
+            if (strokeColor != 0) setStroke(dp(1), strokeColor)
+        }
+
     private fun message(value: String) =
         Toast.makeText(this, value, Toast.LENGTH_LONG).show()
 
@@ -425,6 +689,8 @@ class MainActivity : Activity() {
             }
         }
     }
+
+    private data class PendingJoin(val nis: String, val token: String, val layout: LinearLayout)
 
     @Suppress("DEPRECATION")
     private fun applyImmersiveMode() {
@@ -440,8 +706,8 @@ class MainActivity : Activity() {
     private fun dp(value: Int): Int = (value * resources.displayMetrics.density).toInt()
 
     companion object {
-        private const val KEY_PROJECT_URL = "project_url"
-        private const val KEY_ANON_KEY = "anon_key"
+        private const val CONFIG_ASSET = "supabase.json"
+        private const val LOGO_ASSET = "school-logo.png"
         private const val JOIN_BUTTON_TAG = "join-button"
         private const val NETWORK_TIMEOUT_MS = 15_000
         private const val HEARTBEAT_INTERVAL_MS = 30_000L
@@ -451,5 +717,8 @@ class MainActivity : Activity() {
         private const val MUTED = 0xFF8290A8.toInt()
         private const val INDIGO = 0xFF5B65DF.toInt()
         private const val ERROR = 0xFFB54747.toInt()
+        private const val PAGE = 0xFFF1F6F3.toInt()
+        private const val GREEN = 0xFF11785F.toInt()
+        private const val GREEN_DARK = 0xFF07503F.toInt()
     }
 }

@@ -6,12 +6,14 @@ const corsHeaders = {
   "Access-Control-Allow-Methods": "POST, OPTIONS",
 };
 
-type ParticipantAction = "join" | "heartbeat" | "focus_loss" | "finish";
+type ParticipantAction = "join" | "heartbeat" | "focus_loss" | "resume" | "finish" | "alarm_status";
 
 type ParticipantRequest = {
   action?: ParticipantAction;
   nis?: string;
   participant_token?: string;
+  pause_on_violation?: boolean;
+  proctor_code?: string;
   room_token?: string;
   session_id?: string;
 };
@@ -28,8 +30,9 @@ function sessionIsInWindow(session: { start_time: string; end_time: string }, no
   return Date.parse(session.start_time) <= timestamp && Date.parse(session.end_time) >= timestamp;
 }
 
-async function loginRateLimitKey(address: string, nis: string) {
-  const source = new TextEncoder().encode(`${address}\u0000${nis.toLowerCase()}`);
+async function loginRateLimitKey(address: string, nis: string, purpose = "join") {
+  const identity = `${address}\u0000${nis.toLowerCase()}`;
+  const source = new TextEncoder().encode(purpose === "join" ? identity : `${purpose}\u0000${identity}`);
   const digest = await crypto.subtle.digest("SHA-256", source);
   return Array.from(new Uint8Array(digest), (byte) => byte.toString(16).padStart(2, "0")).join("");
 }
@@ -57,12 +60,16 @@ Deno.serve(async (request) => {
   const action = input.action;
   const nis = input.nis?.trim();
   const participantToken = input.participant_token?.trim();
+  const proctorCode = input.proctor_code?.trim();
   const roomToken = input.room_token?.trim();
-  if (!action || !["join", "heartbeat", "focus_loss", "finish"].includes(action)) {
+  if (!action || !["join", "heartbeat", "focus_loss", "resume", "finish", "alarm_status"].includes(action)) {
     return respond({ error: "Aksi tidak dikenali." }, 400);
   }
   if (!nis || (action !== "finish" && (!participantToken || !/^\d{6}$/.test(participantToken)))) {
     return respond({ error: "NIS atau token pelajaran tidak valid." }, 400);
+  }
+  if (action === "resume" && (!proctorCode || proctorCode.length < 8 || proctorCode.length > 128)) {
+    return respond({ error: "Kode pengawas tidak valid." }, 400);
   }
   if (action === "finish" && (!roomToken || !/^\d{6}$/.test(roomToken))) {
     return respond({ error: "Token ruang tidak valid." }, 400);
@@ -74,9 +81,9 @@ Deno.serve(async (request) => {
   const now = new Date().toISOString();
 
   try {
-    if (action === "join") {
+    if (action === "join" || action === "resume") {
       const sourceAddress = request.headers.get("cf-connecting-ip")?.trim() || "shared";
-      const bucketKey = await loginRateLimitKey(sourceAddress, nis);
+      const bucketKey = await loginRateLimitKey(sourceAddress, nis, action);
       const { data: loginAllowed, error: rateLimitError } = await db
         .rpc("participant_allow_login_attempt", { p_bucket_key: bucketKey });
       if (rateLimitError) throw rateLimitError;
@@ -118,7 +125,7 @@ Deno.serve(async (request) => {
     if (!allocation) return respond({ error: "NIS, token pelajaran, atau sesi tidak cocok." }, 403);
     const { data: room, error: roomError } = await db
       .from("rooms")
-      .select("id,room_name,active_token")
+      .select("id,room_name,active_token,proctor_code")
       .eq("id", allocation.room_id)
       .maybeSingle();
     if (roomError) throw roomError;
@@ -126,7 +133,7 @@ Deno.serve(async (request) => {
 
     const { data: existingLog, error: logError } = await db
       .from("exam_logs")
-      .select("id,status,violation_count")
+      .select("id,status,violation_count,alarm_active")
       .eq("student_id", student.id)
       .eq("session_id", sessionId)
       .maybeSingle();
@@ -136,7 +143,25 @@ Deno.serve(async (request) => {
       if (!session.is_active || !sessionIsInWindow(session, now)) {
         return respond({ error: "Sesi ujian tidak sedang menerima peserta." }, 403);
       }
-      if (existingLog?.status === "blocked") return respond({ error: "Akses diblokir. Minta bantuan pengawas." }, 423);
+      if (existingLog?.status === "blocked") {
+        return respond({
+          error: "Pelanggaran tercatat. Masukkan kode pengawas untuk melanjutkan.",
+          requires_proctor: true,
+          alarm_active: existingLog.alarm_active === true,
+          session: {
+            id: session.id,
+            title: session.title,
+            gform_url: session.gform_url,
+            end_time: session.end_time,
+          },
+          participant: {
+            name: student.name,
+            nis: student.nis,
+            room_name: room.room_name,
+            seat_number: allocation.seat_number,
+          },
+        }, 423);
+      }
       if (existingLog?.status === "finished") return respond({ error: "Ujian untuk akun ini sudah ditandai selesai." }, 403);
 
       let log = existingLog;
@@ -187,25 +212,82 @@ Deno.serve(async (request) => {
       });
     }
 
-    if (!session.is_active && action !== "finish") {
+    if (!session.is_active && action !== "finish" && action !== "alarm_status") {
       return respond({ error: "Sesi ujian sudah tidak aktif." }, 403);
     }
     if (!sessionIsInWindow(session, now)) {
-      if (action !== "finish") return respond({ error: "Waktu sesi ujian telah berakhir." }, 403);
+      if (action !== "finish" && action !== "alarm_status") return respond({ error: "Waktu sesi ujian telah berakhir." }, 403);
     }
     if (!existingLog) return respond({ error: "Catatan ujian tidak ditemukan. Silakan masuk kembali." }, 404);
-    if (existingLog.status === "blocked" && action !== "finish") {
+    if (existingLog.status === "blocked" && action !== "finish" && action !== "resume" && action !== "alarm_status") {
       return respond({ error: "Akses diblokir. Minta bantuan pengawas." }, 423);
     }
-    if (existingLog.status === "finished" && action !== "finish") {
+    if (existingLog.status === "finished" && action !== "finish" && action !== "alarm_status") {
       return respond({ error: "Ujian untuk akun ini sudah ditandai selesai." }, 403);
     }
 
     if (action === "focus_loss") {
       const { data: violationCount, error: violationError } = await db
-        .rpc("participant_record_violation", { p_exam_log_id: existingLog.id });
+        .rpc("participant_record_violation", {
+          p_exam_log_id: existingLog.id,
+          p_pause_on_violation: input.pause_on_violation === true,
+        });
       if (violationError) throw violationError;
-      return respond({ status: existingLog.status, violation_count: violationCount });
+      return respond({
+        status: input.pause_on_violation === true ? "blocked" : existingLog.status,
+        violation_count: violationCount,
+        paused: input.pause_on_violation === true,
+        alarm_active: input.pause_on_violation === true,
+      });
+    }
+
+    if (action === "resume") {
+      if (existingLog.status !== "blocked") {
+        return respond({ error: "Tidak ada pelanggaran tertunda yang memerlukan kode pengawas." }, 409);
+      }
+      if (proctorCode !== room.proctor_code) {
+        return respond({ error: "Kode pengawas salah." }, 403);
+      }
+      const { error: resumeError } = await db
+        .from("exam_logs")
+        .update({ status: "in_exam", last_heartbeat: now, alarm_active: false })
+        .eq("id", existingLog.id)
+        .eq("status", "blocked");
+      if (resumeError) throw resumeError;
+      return respond({
+        session: {
+          id: session.id,
+          title: session.title,
+          gform_url: session.gform_url,
+          end_time: session.end_time,
+        },
+        participant: {
+          name: student.name,
+          nis: student.nis,
+          room_name: room.room_name,
+          seat_number: allocation.seat_number,
+        },
+        status: "in_exam",
+      });
+    }
+
+    if (action === "alarm_status") {
+      return respond({
+        status: existingLog.status,
+        alarm_active: existingLog.alarm_active === true,
+        session: {
+          id: session.id,
+          title: session.title,
+          gform_url: session.gform_url,
+          end_time: session.end_time,
+        },
+        participant: {
+          name: student.name,
+          nis: student.nis,
+          room_name: room.room_name,
+          seat_number: allocation.seat_number,
+        },
+      });
     }
 
     if (action === "heartbeat") {
@@ -223,7 +305,7 @@ Deno.serve(async (request) => {
       }
       const { error: finishError } = await db
         .from("exam_logs")
-        .update({ status: "finished", last_heartbeat: now })
+        .update({ status: "finished", last_heartbeat: now, alarm_active: false })
         .eq("id", existingLog.id);
       if (finishError) throw finishError;
       return respond({ status: "finished" });

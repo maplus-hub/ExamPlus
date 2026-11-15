@@ -1,0 +1,136 @@
+<!doctype html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#f3f5fa" />
+    <meta name="description" content="Portal peserta ujian ExamPlus." />
+    <title>ExamPlus | Portal Peserta</title>
+    <link rel="stylesheet" href="./student.css" />
+    <script src="./student.js" defer></script>
+  </head>
+  <body>
+    <main id="login-screen" class="page-shell login-page">
+      <div class="login-layout">
+        <aside class="login-hero">
+          <div class="hero-logo-wrap">
+            <img class="school-logo" src="./assets/school-logo.png" alt="Logo Madrasah Aliyah Plus Sunan Giri Salatiga" />
+          </div>
+          <p class="hero-brand">EXAMPLUS <span>·</span> PORTAL PESERTA</p>
+          <h2>Ujian dimulai dengan fokus.</h2>
+          <p class="hero-copy">Satu ruang belajar digital yang dirancang agar kamu bisa mengerjakan ujian dengan tenang dan tertib.</p>
+          <div class="hero-points" aria-label="Informasi portal">
+            <span><i aria-hidden="true"></i> Aman dan terpantau</span>
+            <span><i aria-hidden="true"></i> Siapkan NIS dan token pelajaran</span>
+          </div>
+          <div class="hero-foot">Madrasah Aliyah Plus Sunan Giri · Salatiga</div>
+        </aside>
+
+        <section class="login-card" aria-labelledby="login-title">
+          <div class="mobile-school-logo">
+            <img class="school-logo" src="./assets/school-logo.png" alt="Logo Madrasah Aliyah Plus Sunan Giri Salatiga" />
+          </div>
+          <p class="eyebrow">PORTAL PESERTA</p>
+          <h1 id="login-title">Selamat datang</h1>
+          <p class="muted login-intro">Masuk menggunakan data yang diberikan oleh admin ujian.</p>
+          <p id="local-file-warning" class="environment-warning hidden" role="status">
+            Portal dibuka langsung dari file. Jalankan melalui server lokal, misalnya
+            <code>python -m http.server 8000</code>, lalu buka
+            <code>http://localhost:8000/student.html</code>, atau gunakan situs GitHub Pages.
+          </p>
+
+          <form id="login-form">
+            <label for="student-nis">Nomor Induk Siswa <span>NIS</span></label>
+            <div class="input-wrap">
+              <span class="input-icon" aria-hidden="true">ID</span>
+              <input id="student-nis" name="nis" autocomplete="username" placeholder="NIS" required maxlength="80" />
+            </div>
+            <label for="lesson-token">Token pelajaran</label>
+            <div class="input-wrap">
+              <span class="input-icon token-icon" aria-hidden="true">••</span>
+              <input
+                id="lesson-token"
+                name="participant_token"
+                type="text"
+                inputmode="numeric"
+                autocomplete="one-time-code"
+                pattern="[0-9]{6}"
+                maxlength="6"
+                placeholder="6 digit"
+                required
+              />
+            </div>
+            <p id="login-error" class="error-message" role="alert"></p>
+            <button id="login-button" class="primary-button full-width" type="submit">
+              Masuk ke ujian <span aria-hidden="true">→</span>
+            </button>
+          </form>
+
+          <div class="login-divider"><span></span><i aria-hidden="true">✦</i><span></span></div>
+          <p class="security-note">Gunakan token pelajaran untuk masuk. Token ruang hanya digunakan saat keluar melalui pengawas.</p>
+          <p class="config-note"><span class="online-dot" aria-hidden="true"></span> Koneksi sekolah siap digunakan</p>
+        </section>
+      </div>
+      <p class="page-footnote">Portal web tidak dapat mengunci perangkat atau mencegah perpindahan aplikasi. Untuk ujian dengan mode kios, gunakan aplikasi peserta pada perangkat yang dikelola sekolah.</p>
+    </main>
+
+    <main id="exam-screen" class="exam-screen hidden">
+      <header class="exam-header">
+        <div class="exam-brand"><img class="exam-logo" src="./assets/school-logo.png" alt="" /><strong>ExamPlus</strong></div>
+        <div class="participant-summary">
+          <strong id="participant-name">Peserta</strong>
+          <span id="participant-room"></span>
+        </div>
+        <div class="exam-header-actions">
+          <span id="connection-indicator" class="connection-indicator">Terhubung</span>
+          <button id="request-exit" class="secondary-button" type="button">Keluar ujian</button>
+        </div>
+      </header>
+      <section class="exam-notice" aria-label="Informasi pelajaran">
+        <div>
+          <p class="eyebrow">PELAJARAN</p>
+          <h1 id="lesson-title">Pelajaran</h1>
+        </div>
+        <p class="web-warning">Jangan tutup atau pindah tab. Aktivitas perpindahan tab dapat tercatat sebagai pelanggaran.</p>
+        <p id="participant-alert" class="participant-alert" role="status" aria-live="polite"></p>
+      </section>
+      <section class="form-container" aria-label="Formulir ujian">
+        <iframe id="exam-form-frame" title="Formulir ujian" referrerpolicy="strict-origin-when-cross-origin"></iframe>
+        <div id="form-fallback" class="form-fallback hidden">
+          Formulir tidak tampil? <a id="open-form-link" href="#" target="_blank" rel="noopener noreferrer">Buka Google Forms</a>
+        </div>
+        <div id="exam-stop-panel" class="exam-stop-panel hidden" role="alert">
+          <div class="brand-mark" aria-hidden="true">!</div>
+          <h2>Akses ujian dihentikan</h2>
+          <p id="exam-stop-message" class="muted"></p>
+          <p class="muted">Silakan panggil pengawas untuk mendapatkan bantuan.</p>
+        </div>
+      </section>
+    </main>
+
+    <dialog id="exit-dialog" class="exit-dialog">
+      <form id="exit-form">
+        <p class="eyebrow">VERIFIKASI PENGAWAS</p>
+        <h2>Keluar dari ujian</h2>
+        <p class="muted">Minta token ruang kepada pengawas. Ujian hanya ditandai selesai jika token sesuai dengan ruang alokasi.</p>
+        <label for="room-token">Token ruang</label>
+        <input
+          id="room-token"
+          name="room_token"
+          type="text"
+          inputmode="numeric"
+          autocomplete="one-time-code"
+          pattern="[0-9]{6}"
+          maxlength="6"
+          placeholder="6 digit"
+          required
+        />
+        <p id="exit-error" class="error-message" role="alert"></p>
+        <div class="button-row">
+          <button id="exit-cancel" class="secondary-button" type="button">Batal</button>
+          <button id="exit-submit" class="primary-button" type="submit">Verifikasi dan keluar</button>
+        </div>
+      </form>
+    </dialog>
+  </body>
+</html>

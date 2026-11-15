@@ -1,4 +1,3 @@
-const STORAGE_KEY = "examplus.supabase";
 const PAGE_SIZE = 1000;
 
 const state = {
@@ -41,18 +40,79 @@ function setAuthError(message = "") {
   $("#auth-error").textContent = message;
 }
 
-function setSettingsError(message = "") {
-  $("#settings-error").textContent = message;
+function updateThemeButtons() {
+  const isDark = document.documentElement.dataset.theme === "dark";
+  $$(".theme-toggle").forEach((button) => {
+    const label = isDark ? "Aktifkan mode terang" : "Aktifkan mode gelap";
+    button.textContent = isDark ? "☀" : "☾";
+    button.title = label;
+    button.setAttribute("aria-label", label);
+    button.setAttribute("aria-pressed", String(isDark));
+  });
+  const themeColor = document.querySelector('meta[name="theme-color"]');
+  if (themeColor) themeColor.content = isDark ? "#0c1422" : "#f5f7fb";
 }
 
-function getStoredConfig() {
+function toggleTheme() {
+  const nextTheme = document.documentElement.dataset.theme === "dark" ? "light" : "dark";
+  document.documentElement.dataset.theme = nextTheme;
+  updateThemeButtons();
   try {
-    const config = JSON.parse(localStorage.getItem(STORAGE_KEY) || "null");
-    if (config?.url && config?.key) return config;
+    localStorage.setItem("examplus-theme", nextTheme);
   } catch {
-    localStorage.removeItem(STORAGE_KEY);
+    showToast("Mode warna aktif, tetapi preferensi tidak dapat disimpan di browser.", true);
   }
-  return null;
+}
+
+function isServiceRoleKey(key) {
+  const parts = key.split(".");
+  if (parts.length !== 3) return false;
+  try {
+    let payload = parts[1].replace(/-/g, "+").replace(/_/g, "/");
+    payload += "=".repeat((4 - payload.length % 4) % 4);
+    return JSON.parse(atob(payload)).role === "service_role";
+  } catch {
+    return false;
+  }
+}
+
+async function loadSupabaseConfig() {
+  if (location.protocol === "file:") {
+    throw new Error("Jalankan dashboard melalui HTTP/HTTPS, bukan dengan membuka index.html langsung.");
+  }
+
+  let response;
+  try {
+    response = await fetch("./config/supabase.json", { cache: "no-store" });
+  } catch {
+    throw new Error("Tidak dapat memuat config/supabase.json. Periksa deployment situs.");
+  }
+  if (!response.ok) throw new Error(`Gagal memuat config/supabase.json (HTTP ${response.status}).`);
+
+  let config;
+  try {
+    config = await response.json();
+  } catch {
+    throw new Error("config/supabase.json bukan JSON yang valid.");
+  }
+  if (!config || typeof config !== "object") throw new Error("config/supabase.json harus berisi object JSON.");
+
+  const url = typeof config.url === "string" ? config.url.trim() : "";
+  const key = typeof config.anonKey === "string" ? config.anonKey.trim() : "";
+  let parsedUrl;
+  try {
+    parsedUrl = new URL(url);
+  } catch {
+    throw new Error("URL di config/supabase.json tidak valid.");
+  }
+  if (parsedUrl.protocol !== "https:" || !parsedUrl.hostname || parsedUrl.hostname.includes("your_project_id") ||
+    parsedUrl.username || parsedUrl.password || parsedUrl.pathname !== "/" || parsedUrl.search || parsedUrl.hash
+  ) {
+    throw new Error("URL di config/supabase.json harus berupa URL dasar HTTPS.");
+  }
+  if (!key || key.includes("YOUR_SUPABASE")) throw new Error("Isi anonKey pada config/supabase.json.");
+  if (isServiceRoleKey(key)) throw new Error("Gunakan anon/public key di config/supabase.json, bukan service_role.");
+  return { url: parsedUrl.toString().replace(/\/+$/, ""), key };
 }
 
 function setApplicationVisible(isVisible) {
@@ -105,6 +165,7 @@ async function loadDashboard() {
   state.sessions = sessionsResult.data || [];
   if (workspaceResult.data) state.workspaceSettings = workspaceResult.data;
   await loadActiveExamCount();
+  renderStudentFilters();
   renderStudents();
   renderRooms();
   renderSessions();
@@ -163,12 +224,45 @@ function studentRoomName(student) {
   return state.rooms.find((room) => room.id === student.default_room_id)?.room_name || "";
 }
 
+function renderStudentFilters() {
+  const collator = new Intl.Collator("id", { numeric: true, sensitivity: "base" });
+  const classSelect = $("#student-class-filter");
+  const roomSelect = $("#student-room-filter");
+  const selectedClass = classSelect.value;
+  const selectedRoom = roomSelect.value;
+  const classes = [...new Set(state.students.map((student) => student.original_class).filter(Boolean))]
+    .sort(collator.compare);
+  const rooms = [...state.rooms].sort((a, b) => collator.compare(a.room_name, b.room_name));
+
+  classSelect.replaceChildren(new Option("Semua kelas", ""));
+  for (const className of classes) classSelect.add(new Option(className, className));
+  classSelect.value = classes.includes(selectedClass) ? selectedClass : "";
+
+  roomSelect.replaceChildren(new Option("Semua ruang", ""));
+  for (const room of rooms) roomSelect.add(new Option(room.room_name, room.id));
+  roomSelect.value = state.rooms.some((room) => room.id === selectedRoom) ? selectedRoom : "";
+}
+
 function renderStudents() {
   const query = ($("#student-search").value || "").trim().toLowerCase();
-  const filtered = state.students.filter((student) =>
-    [student.name, student.nis, student.original_class, studentRoomName(student)]
-      .some((value) => String(value || "").toLowerCase().includes(query))
-  );
+  const classFilter = $("#student-class-filter").value;
+  const roomFilter = $("#student-room-filter").value;
+  const sortBy = $("#student-sort").value;
+  const collator = new Intl.Collator("id", { numeric: true, sensitivity: "base" });
+  const sorters = {
+    "name-asc": (a, b) => collator.compare(a.name, b.name),
+    "name-desc": (a, b) => collator.compare(b.name, a.name),
+    "nis-asc": (a, b) => collator.compare(a.nis, b.nis),
+    "class-asc": (a, b) => collator.compare(a.original_class, b.original_class),
+    "room-asc": (a, b) => collator.compare(studentRoomName(a), studentRoomName(b))
+  };
+  const filtered = state.students.filter((student) => {
+    const matchesQuery = [student.name, student.nis, student.original_class, studentRoomName(student)]
+      .some((value) => String(value || "").toLowerCase().includes(query));
+    return matchesQuery &&
+      (!classFilter || student.original_class === classFilter) &&
+      (!roomFilter || student.default_room_id === roomFilter);
+  }).sort((a, b) => sorters[sortBy](a, b) || collator.compare(a.name, b.name));
   const body = $("#students-table");
   body.replaceChildren();
   for (const student of filtered) {
@@ -181,10 +275,20 @@ function renderStudents() {
     edit.className = "small-button";
     edit.textContent = "Edit";
     edit.addEventListener("click", () => openStudentForm(student));
-    appendCell(row, "", { node: edit });
+    const remove = document.createElement("button");
+    remove.type = "button";
+    remove.className = "small-button button-danger";
+    remove.textContent = "Hapus";
+    remove.addEventListener("click", () => deleteStudent(student)
+      .catch((error) => showToast(errorMessage(error), true)));
+    const actions = document.createElement("div");
+    actions.className = "table-actions";
+    actions.append(edit, remove);
+    appendCell(row, "", { node: actions });
     body.append(row);
   }
-  $("#student-count").textContent = String(state.students.length);
+  $("#student-count").textContent = String(filtered.length);
+  $("#student-result-summary").textContent = `Menampilkan ${filtered.length} dari ${state.students.length} siswa.`;
   $("#students-empty").classList.toggle("hidden", filtered.length > 0);
   if (!filtered.length && state.students.length) {
     $("#students-empty").textContent = "Tidak ada siswa yang cocok dengan pencarian.";
@@ -238,6 +342,18 @@ async function saveStudent(event) {
   } finally {
     button.disabled = false;
   }
+}
+
+async function deleteStudent(student) {
+  if (!window.confirm(`Hapus siswa "${student.name}" (${student.nis})? Alokasi ruang dan log ujian siswa ini juga akan dihapus.`)) return;
+  const { error } = await state.client.from("students").delete().eq("id", student.id);
+  if (error) throw error;
+  if ($("#student-id").value === student.id) {
+    $("#student-form").reset();
+    $("#student-form-wrap").classList.add("hidden");
+  }
+  await loadDashboard();
+  showToast("Data siswa dan catatan ujiannya berhasil dihapus.");
 }
 
 function downloadStudentTemplate() {
@@ -301,7 +417,13 @@ function renderRooms() {
       loadRoomMapping().catch((error) => showToast(errorMessage(error), true));
       $("#room-mapping-panel").scrollIntoView({ behavior: "smooth", block: "start" });
     });
-    actions.append(edit, roster);
+    const remove = document.createElement("button");
+    remove.type = "button";
+    remove.className = "small-button button-danger";
+    remove.textContent = "Hapus";
+    remove.addEventListener("click", () => deleteRoom(room)
+      .catch((error) => showToast(errorMessage(error), true)));
+    actions.append(edit, roster, remove);
     appendCell(row, "", { node: actions });
     body.append(row);
   }
@@ -350,6 +472,21 @@ async function createRoom(event) {
   $("#room-form-wrap").classList.add("hidden");
   await loadDashboard();
   showToast(roomId ? "Data ruang diperbarui." : "Ruang dan token ruang berhasil disimpan.");
+}
+
+async function deleteRoom(room) {
+  const { count, error: allocationError } = await state.client.from("participant_allocations")
+    .select("id", { count: "exact", head: true })
+    .eq("room_id", room.id);
+  if (allocationError) throw allocationError;
+  if (count) {
+    throw new Error(`Ruang ${room.room_name} masih dipakai oleh ${count} alokasi peserta. Pindahkan alokasi terlebih dahulu.`);
+  }
+  if (!window.confirm(`Hapus ruang "${room.room_name}"? Ruang default siswa yang memakai ruang ini akan dikosongkan.`)) return;
+  const { error } = await state.client.from("rooms").delete().eq("id", room.id);
+  if (error) throw error;
+  await loadDashboard();
+  showToast(`Ruang ${room.room_name} berhasil dihapus.`);
 }
 
 function renderRoomMappingOptions() {
@@ -590,6 +727,15 @@ function makeSessionRow(session, compact = false) {
     toggle.textContent = session.is_active ? "Tutup" : "Aktifkan";
     toggle.addEventListener("click", () => toggleSession(session).catch((error) => showToast(errorMessage(error), true)));
     controls.append(toggle);
+    const remove = document.createElement("button");
+    remove.type = "button";
+    remove.className = "small-button button-danger";
+    remove.textContent = "Hapus";
+    remove.disabled = session.is_active;
+    remove.title = session.is_active ? "Tutup pelajaran sebelum menghapus." : "Hapus pelajaran beserta alokasi dan log terkait.";
+    remove.addEventListener("click", () => deleteSession(session)
+      .catch((error) => showToast(errorMessage(error), true)));
+    controls.append(remove);
   }
   row.append(main, controls);
   return row;
@@ -738,6 +884,7 @@ function buildMonitorRoster(allocations, logs, students) {
       student_id: allocation.student_id,
       status: log?.status || "not_started",
       violation_count: log?.violation_count || 0,
+      alarm_active: log?.alarm_active === true,
       last_heartbeat: log?.last_heartbeat || null,
       student: students.get(allocation.student_id),
       allocation
@@ -757,7 +904,7 @@ async function fetchSessionLogs(sessionId) {
   const logs = [];
   for (let offset = 0; ; offset += PAGE_SIZE) {
     const { data, error } = await state.client.from("exam_logs")
-      .select("id,student_id,session_id,status,violation_count,last_heartbeat")
+      .select("id,student_id,session_id,status,violation_count,alarm_active,last_heartbeat")
       .eq("session_id", sessionId)
       .order("id")
       .range(offset, offset + PAGE_SIZE - 1);
@@ -792,13 +939,21 @@ function renderMonitor() {
     appendCell(row, String(log.violation_count ?? 0));
     appendCell(row, formatDate(log.last_heartbeat));
     const actionCell = document.createElement("td");
+    if (log.alarm_active) {
+      const stopAlarm = document.createElement("button");
+      stopAlarm.className = "small-button";
+      stopAlarm.textContent = "Matikan alarm";
+      stopAlarm.addEventListener("click", () => stopStudentAlarm(log).catch((error) => showToast(errorMessage(error), true)));
+      actionCell.append(stopAlarm);
+    }
     if (log.status === "blocked") {
       const unblock = document.createElement("button");
       unblock.className = "small-button";
-      unblock.textContent = "Unblock";
+      unblock.textContent = "Buka blokir";
       unblock.addEventListener("click", () => unblockStudent(log).catch((error) => showToast(errorMessage(error), true)));
       actionCell.append(unblock);
-    } else {
+    }
+    if (!log.alarm_active && log.status !== "blocked") {
       actionCell.textContent = "—";
     }
     row.append(actionCell);
@@ -818,10 +973,19 @@ function renderMonitor() {
 
 async function unblockStudent(log) {
   const { error } = await state.client.from("exam_logs")
-    .update({ status: "logged_in", violation_count: 0 })
+    .update({ status: "logged_in", violation_count: 0, alarm_active: false })
     .eq("id", log.id);
   if (error) throw error;
-  showToast("Student unblocked.");
+  showToast("Blokir peserta dibuka.");
+  await loadMonitorLogs();
+}
+
+async function stopStudentAlarm(log) {
+  const { error } = await state.client.from("exam_logs")
+    .update({ alarm_active: false })
+    .eq("id", log.id);
+  if (error) throw error;
+  showToast("Alarm peserta dimatikan. Status ujian tetap dijeda sampai kode pengawas dimasukkan.");
   await loadMonitorLogs();
 }
 
@@ -1114,6 +1278,24 @@ async function createSession(event) {
   }
 }
 
+async function deleteSession(session) {
+  if (session.is_active) throw new Error("Tutup pelajaran sebelum menghapusnya.");
+  const [allocationsResult, logsResult] = await Promise.all([
+    state.client.from("participant_allocations").select("id", { count: "exact", head: true }).eq("session_id", session.id),
+    state.client.from("exam_logs").select("id", { count: "exact", head: true }).eq("session_id", session.id)
+  ]);
+  if (allocationsResult.error) throw allocationsResult.error;
+  if (logsResult.error) throw logsResult.error;
+  const allocationCount = allocationsResult.count || 0;
+  const logCount = logsResult.count || 0;
+  const relatedData = `${allocationCount} alokasi ruang dan ${logCount} log peserta`;
+  if (!window.confirm(`Hapus pelajaran "${session.title}"? Tindakan ini juga menghapus ${relatedData} dan tidak dapat dibatalkan.`)) return;
+  const { error } = await state.client.from("exam_sessions").delete().eq("id", session.id);
+  if (error) throw error;
+  await loadDashboard();
+  showToast(`Pelajaran "${session.title}" dan data terkait berhasil dihapus.`);
+}
+
 function randomToken() {
   const bytes = new Uint32Array(1);
   crypto.getRandomValues(bytes);
@@ -1192,13 +1374,9 @@ function showView(name) {
 }
 
 function openSettings() {
-  const config = getStoredConfig();
-  $("#supabase-url").value = config?.url || "";
-  $("#supabase-key").value = config?.key || "";
   $("#settings-account-email").value = state.user?.email || "";
   $("#password-form").reset();
   $("#admin-invite-form").reset();
-  setSettingsError("");
   $("#password-error").textContent = "";
   $("#admin-error").textContent = "";
   $$(".settings-tab").forEach((tab) => {
@@ -1217,25 +1395,6 @@ function showSettingsTab(name) {
   });
   $$(".settings-panel").forEach((panel) => panel.classList.toggle("hidden", panel.id !== `settings-${name}`));
   if (name === "admins" && state.user) loadAdmins().catch((error) => setAdminError(errorMessage(error)));
-}
-
-async function saveSettings(event) {
-  event.preventDefault();
-  setSettingsError("");
-  const url = $("#supabase-url").value.trim().replace(/\/+$/, "");
-  const key = $("#supabase-key").value.trim();
-  try {
-    const parsedUrl = new URL(url);
-    if (parsedUrl.protocol !== "https:" && parsedUrl.hostname !== "localhost") {
-      throw new Error("Use an HTTPS Supabase project URL.");
-    }
-    if (!key) throw new Error("Enter the Supabase anon/public key.");
-    localStorage.setItem(STORAGE_KEY, JSON.stringify({ url, key }));
-    $("#settings-dialog").close();
-    location.reload();
-  } catch (error) {
-    setSettingsError(errorMessage(error));
-  }
 }
 
 function setAdminError(message = "") {
@@ -1370,9 +1529,14 @@ async function signOut() {
 }
 
 function bindEvents() {
+  updateThemeButtons();
+  $$(".theme-toggle").forEach((button) => button.addEventListener("click", toggleTheme));
   $$(".nav-item[data-view]").forEach((item) => item.addEventListener("click", () => showView(item.dataset.view)));
   $$("[data-go]").forEach((button) => button.addEventListener("click", () => showView(button.dataset.go)));
   $("#student-search").addEventListener("input", renderStudents);
+  $("#student-class-filter").addEventListener("change", renderStudents);
+  $("#student-room-filter").addEventListener("change", renderStudents);
+  $("#student-sort").addEventListener("change", renderStudents);
   $("#open-student-form-button").addEventListener("click", () => openStudentForm());
   $("#close-student-form-button").addEventListener("click", () => $("#student-form-wrap").classList.add("hidden"));
   $("#cancel-student-form-button").addEventListener("click", () => $("#student-form-wrap").classList.add("hidden"));
@@ -1408,20 +1572,17 @@ function bindEvents() {
   $("#settings-button").addEventListener("click", openSettings);
   $("#top-settings-button").addEventListener("click", openSettings);
   $("#top-sign-out-button").addEventListener("click", signOut);
-  $("#open-settings-login").addEventListener("click", openSettings);
   $$(".settings-tab").forEach((tab) => tab.addEventListener("click", () => showSettingsTab(tab.dataset.settingsTab)));
   $("#password-form").addEventListener("submit", updateAdminPassword);
   $("#admin-invite-form").addEventListener("submit", inviteAdmin);
   $("#workspace-settings-form").addEventListener("submit", saveWorkspaceSettings);
   $("#refresh-admins-button").addEventListener("click", () => loadAdmins().catch((error) => setAdminError(errorMessage(error))));
   $("#close-settings-button").addEventListener("click", () => $("#settings-dialog").close());
-  $("#cancel-settings-button").addEventListener("click", () => $("#settings-dialog").close());
-  $("#settings-form").addEventListener("submit", saveSettings);
   $("#auth-form").addEventListener("submit", async (event) => {
     event.preventDefault();
     setAuthError("");
     if (!state.client) {
-      setAuthError("Configure your Supabase project before signing in.");
+      setAuthError("Konfigurasi Supabase bersama belum tersedia. Periksa config/supabase.json.");
       return;
     }
     const { error } = await state.client.auth.signInWithPassword({
@@ -1435,13 +1596,8 @@ function bindEvents() {
 
 async function initialize() {
   bindEvents();
-  const config = getStoredConfig();
-  if (!config) {
-    setApplicationVisible(false);
-    openSettings();
-    return;
-  }
   try {
+    const config = await loadSupabaseConfig();
     await connectSupabase(config);
   } catch (error) {
     setAuthError(errorMessage(error));

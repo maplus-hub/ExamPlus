@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en">
+<html lang="id">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -9,6 +9,18 @@
       content="Dasbor admin ExamPlus untuk mengelola pelajaran dan alokasi siswa."
     />
     <title>ExamPlus | Exam operations</title>
+    <script>
+      (() => {
+        try {
+          const savedTheme = localStorage.getItem("examplus-theme");
+          document.documentElement.dataset.theme = savedTheme === "dark" || savedTheme === "light"
+            ? savedTheme
+            : window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+        } catch {
+          document.documentElement.dataset.theme = "light";
+        }
+      })();
+    </script>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
@@ -21,17 +33,18 @@
   <body>
     <div id="auth-screen" class="auth-screen">
       <form id="auth-form" class="auth-card">
+        <button class="icon-button theme-toggle auth-theme-toggle" type="button" aria-label="Aktifkan mode gelap" title="Aktifkan mode gelap">☾</button>
         <div class="brand-mark">E</div>
         <p class="eyebrow">EXAMPLUS ADMIN</p>
-        <h1>Welcome back</h1>
-        <p class="muted">Sign in with an authorized Supabase account.</p>
-        <label for="auth-email">Email address</label>
+        <h1>Masuk admin</h1>
+        <p class="muted">Gunakan akun admin Supabase yang sudah diotorisasi.</p>
+        <label for="auth-email">Email</label>
         <input id="auth-email" type="email" autocomplete="username" required />
-        <label for="auth-password">Password</label>
+        <label for="auth-password">Kata sandi</label>
         <input id="auth-password" type="password" autocomplete="current-password" required />
-        <button class="button button-primary full-width" type="submit">Sign in</button>
+        <button class="button button-primary full-width" type="submit">Masuk</button>
         <p id="auth-error" class="form-error" role="alert"></p>
-        <button id="open-settings-login" class="text-button" type="button">Configure Supabase</button>
+        <p class="muted">Koneksi Supabase diambil dari konfigurasi bersama aplikasi.</p>
       </form>
     </div>
 
@@ -69,6 +82,7 @@
           </div>
           <div class="topbar-actions">
             <span id="current-user" class="user-label"></span>
+            <button class="icon-button theme-toggle" type="button" aria-label="Aktifkan mode gelap" title="Aktifkan mode gelap">☾</button>
             <button id="top-settings-button" class="icon-button" aria-label="Open settings" title="Settings">⚙</button>
             <button id="top-sign-out-button" class="icon-button" aria-label="Sign out" title="Sign out">↪</button>
             <span id="top-avatar" class="avatar">A</span>
@@ -132,8 +146,24 @@
           <div class="panel">
             <div class="panel-heading">
               <div><h3>Daftar siswa <span id="student-count" class="count-pill">0</span></h3><p class="muted">Kolom Excel: nis, name, original_class, room (opsional). Nama ruang harus cocok dengan daftar ruang.</p></div>
-              <input id="student-search" class="search-input" type="search" placeholder="Search students…" aria-label="Search students" />
             </div>
+            <div class="student-filters" role="search" aria-label="Cari, urutkan, dan filter siswa">
+              <input id="student-search" type="search" placeholder="Cari nama, NIS, kelas..." aria-label="Cari nama, NIS, kelas, atau ruang" />
+              <select id="student-class-filter" aria-label="Filter kelas">
+                <option value="">Semua kelas</option>
+              </select>
+              <select id="student-room-filter" aria-label="Filter ruang">
+                <option value="">Semua ruang</option>
+              </select>
+              <select id="student-sort" aria-label="Urutkan siswa">
+                <option value="name-asc">Nama (A-Z)</option>
+                <option value="name-desc">Nama (Z-A)</option>
+                <option value="nis-asc">NIS</option>
+                <option value="class-asc">Kelas</option>
+                <option value="room-asc">Ruang</option>
+              </select>
+            </div>
+            <p id="student-result-summary" class="muted student-result-summary"></p>
             <div class="table-wrap">
               <table><thead><tr><th>Siswa</th><th>NIS</th><th>Kelas asal</th><th>Ruang default</th><th></th></tr></thead><tbody id="students-table"></tbody></table>
             </div>
@@ -143,7 +173,7 @@
 
         <section id="view-rooms" class="view hidden">
           <div class="welcome-row">
-            <div><h2>Data ruang & pengawas</h2><p class="muted">Atur ruang sekali untuk ujian. Token ruang dipakai pengawas untuk masuk dan peserta untuk keluar; kode pengawas adalah kredensial terpisah.</p></div>
+            <div><h2>Data ruang & pengawas</h2><p class="muted">Atur ruang sekali untuk ujian. Kode pengawas digunakan untuk masuk ke APK pengawas dan menangani pelanggaran; token ruang 6 digit dipakai peserta untuk keluar.</p></div>
             <div class="button-row">
               <button id="open-room-form-button" class="button button-secondary">＋ Tambah ruang</button>
               <button id="generate-tokens-button" class="button button-primary">⟳ Buat token 6 digit</button>
@@ -227,7 +257,7 @@
           <div class="panel">
             <div class="panel-heading"><div><h3>Student activity</h3><p class="muted">Updated live from exam logs.</p></div><span id="monitor-total" class="count-pill">0 students</span></div>
             <div class="table-wrap">
-              <table><thead><tr><th>Student</th><th>Room / seat</th><th>Status</th><th>Violations</th><th>Last seen</th><th>Action</th></tr></thead><tbody id="monitor-table"></tbody></table>
+              <table><thead><tr><th>Nama peserta</th><th>Ruang / kursi</th><th>Status</th><th>Pelanggaran</th><th>Terakhir aktif</th><th>Tindakan</th></tr></thead><tbody id="monitor-table"></tbody></table>
             </div>
             <div id="monitor-empty" class="empty-state">Pilih pelajaran untuk melihat aktivitas peserta.</div>
           </div>
@@ -262,16 +292,9 @@
         </form>
       </section>
       <section id="settings-connection" class="settings-panel hidden">
-        <div class="settings-section-title"><h3>Koneksi Supabase</h3><p class="muted">Konfigurasi hanya disimpan di browser ini.</p></div>
-        <p class="muted settings-copy">Gunakan URL project dan kunci <strong>anon/public</strong>. Jangan masukkan kunci <code>service_role</code>.</p>
-        <form id="settings-form">
-          <label for="supabase-url">Project URL</label>
-          <input id="supabase-url" type="url" placeholder="https://project.supabase.co" required />
-          <label for="supabase-key">Anon/public key</label>
-          <input id="supabase-key" type="password" autocomplete="off" required />
-          <p id="settings-error" class="form-error" role="alert"></p>
-          <div class="form-actions"><button class="button button-secondary" type="button" id="cancel-settings-button">Batal</button><button id="save-settings-button" class="button button-primary" type="submit">Simpan & hubungkan</button></div>
-        </form>
+        <div class="settings-section-title"><h3>Koneksi Supabase</h3><p class="muted">Satu konfigurasi untuk dashboard dan seluruh aplikasi peserta.</p></div>
+        <p class="muted settings-copy">URL project dan anon/public key dimuat dari <code>config/supabase.json</code>. Perubahan pada file tersebut berlaku untuk dashboard web dan menjadi sumber konfigurasi APK serta EXE saat dibangun ulang.</p>
+        <p class="muted settings-copy">Jangan masukkan kunci <code>service_role</code>; kunci itu hanya boleh berada di server.</p>
       </section>
       <section id="settings-workspace" class="settings-panel hidden">
         <div class="settings-section-title"><h3>Preferensi workspace</h3><p class="muted">Diterapkan untuk semua admin pada project ini.</p></div>
