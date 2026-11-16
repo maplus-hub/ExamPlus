@@ -72,6 +72,8 @@ class ViolationAlarmService : Service() {
                         if (response.optString("status") == "in_exam" ||
                             response.optString("status") == "logged_in"
                         ) {
+                            // Stop sound/vibration synchronously before closing the service.
+                            stopAlarm()
                             sendBroadcast(
                                 Intent(ACTION_PROCTOR_RESUMED)
                                     .setPackage(packageName)
@@ -269,6 +271,9 @@ class ViolationAlarmService : Service() {
                     retryButton?.isEnabled = true
                     return@post
                 }
+                // The server has accepted the code. Release alarm output now,
+                // rather than waiting for onDestroy() to run.
+                stopAlarm()
                 val resumeIntent = Intent(ACTION_PROCTOR_RESUMED)
                     .setPackage(packageName)
                     .putExtra(EXTRA_RESUME_RESPONSE, response.toString())

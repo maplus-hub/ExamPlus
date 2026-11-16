@@ -498,12 +498,17 @@ class MainActivity : Activity() {
     }
 
     private fun completeProctorResume(response: JSONObject) {
+        // Defensive cleanup: a resumed session must not leave an alarm service
+        // running if the broadcast arrives before service shutdown completes.
+        stopService(Intent(this, ViolationAlarmService::class.java))
         if (webView == null) {
             showExamScreen(response)
             return
         }
         violationPaused = false
-        lastFocusLossAt = 0L
+        // Closing the proctor overlay can briefly move focus. Do not treat
+        // that transition as a new student-initiated violation.
+        lastFocusLossAt = System.currentTimeMillis()
         webView?.onResume()
         applyImmersiveMode()
         handler.removeCallbacks(heartbeat)
