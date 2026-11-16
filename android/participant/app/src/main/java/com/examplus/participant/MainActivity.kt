@@ -506,7 +506,9 @@ class MainActivity : Activity() {
             return
         }
         violationPaused = false
-        lastFocusLossAt = 0L
+        // Closing the proctor overlay can briefly move focus. Do not treat
+        // that transition as a new student-initiated violation.
+        lastFocusLossAt = System.currentTimeMillis()
         webView?.onResume()
         applyImmersiveMode()
         handler.removeCallbacks(heartbeat)
