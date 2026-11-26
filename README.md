@@ -1,5 +1,9 @@
 # ExamPlus
 
+## Aplikasi Asesmen Al-Qur'an Hadis XI
+
+Versi ujian mandiri tersedia di [`assessment.html`](./assessment.html). Aplikasi memuat soal dari Google Form lampiran, menyediakan timer 90 menit dan penyimpanan progres lokal, lalu mengirim seluruh respons ke Google Form melalui endpoint `formResponse`.
+
 Dashboard web statis untuk operasi ujian ExamPlus. Dibangun dengan HTML, CSS, JavaScript, Supabase, dan ditujukan untuk GitHub Pages.
 
 ## Konfigurasi Supabase bersama

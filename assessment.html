@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#08765a" />
+    <title>Asesmen Al-Qur'an Hadis XI</title>
+    <link rel="stylesheet" href="./assessment.css" />
+    <script src="./assessment.js" defer></script>
+  </head>
+  <body>
+    <main id="start-screen" class="start-screen">
+      <section class="start-card">
+        <img class="school-logo" src="./assets/school-logo.png" alt="Logo Madrasah Aliyah Plus Sunan Giri" />
+        <p class="eyebrow">ASSESMENT DIGITAL · KELAS XI</p>
+        <h1>Al-Qur'an &amp; Hadis</h1>
+        <p class="start-copy">Kerjakan dengan tenang, jujur, dan teliti. Jawaban akan dikirim ke Google Form.</p>
+        <label for="participant-name">Nama lengkap</label>
+        <input id="participant-name" autocomplete="name" maxlength="120" placeholder="Tuliskan nama lengkap" />
+        <label for="participant-class">Kelas</label>
+        <select id="participant-class">
+          <option value="">Pilih kelas</option>
+          <option>XI.1</option>
+          <option>XI.2</option>
+        </select>
+        <p id="start-error" class="error" role="alert"></p>
+        <button id="start-button" class="primary-button" type="button">Mulai ujian</button>
+        <p class="duration-note">Waktu pengerjaan: <strong>90 menit</strong></p>
+      </section>
+    </main>
+
+    <main id="exam-screen" class="exam-screen hidden">
+      <header class="exam-header">
+        <div class="brand">
+          <img src="./assets/school-logo.png" alt="" />
+          <div>
+            <strong>Asesmen Al-Qur'an &amp; Hadis</strong>
+            <span id="participant-summary">Peserta</span>
+          </div>
+        </div>
+        <div class="timer" aria-label="Waktu tersisa">
+          <span>SISA WAKTU</span>
+          <strong id="timer">01:30:00</strong>
+        </div>
+      </header>
+
+      <aside class="exam-progress">
+        <p class="eyebrow">PROGRES</p>
+        <div id="progress-list" class="progress-list"></div>
+      </aside>
+
+      <div id="exam-content" class="exam-content"></div>
+
+      <footer class="exam-footer">
+        <button id="save-button" class="secondary-button" type="button">Simpan progres</button>
+        <button id="submit-button" class="primary-button" type="button">Kirim jawaban</button>
+      </footer>
+    </main>
+
+    <dialog id="submit-dialog" class="submit-dialog">
+      <form method="dialog">
+        <p class="eyebrow">KONFIRMASI</p>
+        <h2>Kirim semua jawaban?</h2>
+        <p id="submit-summary" class="muted"></p>
+        <p class="warning">Pastikan jawaban sudah diperiksa. Setelah dikirim, jawaban tidak dapat diubah.</p>
+        <div class="dialog-actions">
+          <button id="cancel-submit" class="secondary-button" value="cancel">Periksa lagi</button>
+          <button id="confirm-submit" class="primary-button" value="confirm">Ya, kirim sekarang</button>
+        </div>
+      </form>
+    </dialog>
+
+    <div id="success-screen" class="success-screen hidden" role="alert">
+      <section>
+        <div class="success-icon">✓</div>
+        <p class="eyebrow">SELESAI</p>
+        <h1>Jawaban berhasil dikirim</h1>
+        <p>Jawabanmu telah diteruskan ke Google Form.</p>
+        <button id="back-button" class="secondary-button" type="button">Kembali</button>
+      </section>
+    </div>
+  </body>
+</html>

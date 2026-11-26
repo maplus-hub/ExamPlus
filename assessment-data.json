@@ -1,0 +1,816 @@
+{
+  "title": "Asesmen Al-Quran Hadis XI",
+  "action": "https://docs.google.com/forms/d/e/1FAIpQLScQyvOQXR7fTHR3DL2OYom3iGQX3ijH2oZSjp2Mp-WnaFABNg/formResponse",
+  "sections": [
+    {
+      "title": "IDENTITAS PESERTA DIDIK",
+      "items": [
+        {
+          "id": 1615272163,
+          "title": "Nama Lengkap",
+          "type": "text",
+          "entry": 1493437007
+        },
+        {
+          "id": 1324651102,
+          "title": "Kelas",
+          "type": "select",
+          "entry": 1096851284,
+          "options": [
+            "XI.1",
+            "XI.2"
+          ]
+        }
+      ]
+    },
+    {
+      "title": "BAGIAN I: PILIHAN GANDA SEDERHANA (Nomor 1 - 20)",
+      "items": [
+        {
+          "id": 548248473,
+          "title": "1. Perhatikan potongan ayat berikut:\nوَإِذْ قَالَ رَبُّكَ لِلْمَلَائِكَةِ إِنِّي جَاعِلٌ فِي الْأَرْضِ خَلِيفَةً\nMakna kata khalifah dalam QS. Al-Baqarah ayat 30 tersebut adalah...",
+          "type": "radio",
+          "entry": 1313723895,
+          "options": [
+            "Penjaga alam semesta yang menggantikan seluruh tugas malaikat",
+            "Pemimpin dan pengelola bumi yang bertugas memakmurkannya sesuai hukum Allah",
+            "Penguasa tunggal yang bebas berbuat sekehendak hati di bumi",
+            "Makhluk yang derajatnya lebih tinggi daripada malaikat karena memiliki hawa nafsu",
+            "Utusan Allah yang hanya bertugas menyampaikan wahyu kepada manusia"
+          ]
+        },
+        {
+          "id": 172882413,
+          "title": "2. Dalam QS. Al-Baqarah ayat 31–32, keunggulan Nabi Adam a.s. di hadapan para malaikat sehingga mereka mengakui keterbatasan ilmunya terletak pada...",
+          "type": "radio",
+          "entry": 2026697781,
+          "options": [
+            "Kemampuan memimpin peperangan di muka bumi",
+            "Kemampuan melihat hal-hal gaib di masa depan",
+            "Kecerdasan mengetahui nama-nama benda yang diajarkan Allah Swt.",
+            "Kekuatan fisik yang diciptakan langsung dari tanah pilihan",
+            "Ketaatan beribadah tanpa pernah merasa lelah"
+          ]
+        },
+        {
+          "id": 422834043,
+          "title": "3. Berdasarkan QS. Az-Zariyat ayat 56 (وَمَا خَلَقْتُ الْجِنَّ وَالْإِنْسَ إِلَّا لِيَعْبُدُونِ), tujuan utama penciptaan jin dan manusia oleh Allah Swt. adalah...",
+          "type": "radio",
+          "entry": 1107220191,
+          "options": [
+            "Saling berlomba membangun peradaban modern",
+            "Menjaga keseimbangan ekosistem alam semesta",
+            "Menguasai seluruh isi bumi dan lautan",
+            "Mengumpulkan kekayaan sebagai bekal hidup di dunia",
+            "Beribadah dan mengabdi hanya kepada Allah Swt."
+          ]
+        },
+        {
+          "id": 723565270,
+          "title": "4. Urutan fase penciptaan manusia yang dijelaskan dalam QS. Al-Mu’minun ayat 12–14 secara berturut-turut adalah...",
+          "type": "radio",
+          "entry": 363872063,
+          "options": [
+            "Nutfah – ‘alaqah – mudghah – saripati tanah – tulang belulang – daging",
+            "Saripati tanah – ‘alaqah – nutfah – mudghah – daging – tulang belulang",
+            "Nutfah – saripati tanah – mudghah – ‘alaqah – daging – tulang belulang",
+            "Saripati tanah – nutfah – ‘alaqah – mudghah – tulang belulang – dibungkus daging",
+            "Saripati tanah – mudghah – ‘alaqah – nutfah – tulang belulang – daging"
+          ]
+        },
+        {
+          "id": 1205073303,
+          "title": "5. Potongan ayat فَتَبَارَكَ اللَّهُ أَحْسَنُ الْخَالِقِينَ pada akhir QS. Al-Mu’minun ayat 14 menegaskan bahwa...",
+          "type": "radio",
+          "entry": 1585465647,
+          "options": [
+            "Proses kelahiran manusia sepenuhnya bergantung pada ilmu kedokteran",
+            "Malaikat turut membantu menyempurnakan jasad manusia di dalam rahim",
+            "Setiap makhluk hidup mengalami evolusi secara kebetulan",
+            "Allah Swt. adalah Pencipta Yang Paling Baik atas kesempurnaan bentuk manusia",
+            "Manusia memiliki hak penuh untuk menentukan bentuk fisiknya sendiri"
+          ]
+        },
+        {
+          "id": 1823311441,
+          "title": "6. Dalam QS. An-Nahl ayat 78, Allah Swt. mengeluarkan manusia dari perut ibunya dalam keadaan tidak mengetahui sesuatu pun, lalu membekalinya dengan tiga potensi utama agar bersyukur, yaitu...",
+          "type": "radio",
+          "entry": 1352033086,
+          "options": [
+            "Akal, nafsu, dan kekuatan fisik",
+            "Harta, takhta, dan keturunan",
+            "Keberanian, kesabaran, dan kecerdasan emosional",
+            "Pendengaran, penglihatan, dan hati nurani",
+            "Ilmu pengetahuan, teknologi, dan kekuasaan"
+          ]
+        },
+        {
+          "id": 218620642,
+          "title": "7. Perintah utama dalam QS. At-Tahrim ayat 6 (قُوا أَنْفُسَكُمْ وَأَهْلِيكُمْ نَارًا) kepada orang-orang yang beriman adalah...",
+          "type": "radio",
+          "entry": 983422214,
+          "options": [
+            "Mewariskan harta benda secara adil kepada seluruh anggota keluarga",
+            "Menjaga diri sendiri dan keluarga dari siksa api neraka dengan ketaatan",
+            "Membangun rumah tangga yang harmonis dan dihormati masyarakat",
+            "Menyelesaikan setiap perselisihan rumah tangga secara kekeluargaan",
+            "Mencari nafkah sebanyak-banyaknya untuk menjamin masa depan keluarga"
+          ]
+        },
+        {
+          "id": 160090548,
+          "title": "8. Dalam QS. Taha ayat 132, Allah Swt. memerintahkan Nabi Muhammad saw. agar menyuruh keluarganya melaksanakan salat dan bersabar dalam mengerjakannya. Ayat tersebut menegaskan bahwa urusan rezeki...",
+          "type": "radio",
+          "entry": 640720402,
+          "options": [
+            "Harus dicari dengan meninggalkan sementara kewajiban ibadah",
+            "Tidak ada hubungannya dengan ketakwaan seseorang kepada Allah",
+            "Hanya diberikan kepada orang-orang yang memiliki jabatan tinggi",
+            "Ditentukan sepenuhnya oleh kerja keras manusia semata",
+            "Dijamin oleh Allah Swt. dan akibat yang baik adalah bagi orang yang bertakwa"
+          ]
+        },
+        {
+          "id": 2145523396,
+          "title": "9. Sikap yang diperintahkan Allah Swt. dalam QS. Al-An’am ayat 70 terhadap orang-orang yang menjadikan agama mereka sebagai permainan dan senda gurau adalah...",
+          "type": "radio",
+          "entry": 1736834530,
+          "options": [
+            "Meninggalkan mereka dan tetap memberi peringatan dengan Al-Qur'an",
+            "Memutus seluruh hubungan kemanusiaan secara permanen",
+            "Membiarkan saja tanpa pernah menyampaikan nasihat kebenaran",
+            "Membalas ejekan mereka dengan ucapan yang lebih keras",
+            "Mengikuti gaya hidup mereka agar dapat berdakwah dari dalam"
+          ]
+        },
+        {
+          "id": 1084720873,
+          "title": "10. Perhatikan daftar kelompok manusia berikut sesuai QS. An-Nisa ayat 36:\n1) Kedua orang tua\n2) Karib kerabat dan anak-anak yatim\n3) Orang-orang miskin dan tetangga dekat maupun jauh\n4) Teman sejawat, ibnu sabil, dan hamba sahaya\nPerintah Allah Swt. terhadap seluruh kelompok tersebut setelah perintah menyembah-Nya dan tidak menyekutukan-Nya adalah...",
+          "type": "radio",
+          "entry": 1086607916,
+          "options": [
+            "Membangunkan tempat tinggal khusus bagi mereka",
+            "Memberikan pinjaman modal usaha tanpa bunga",
+            "Menjadikan mereka saksi dalam setiap perjanjian",
+            "Mengajak mereka bermusyawarah dalam segala urusan",
+            "Berbuat baik (ihsan) kepada mereka"
+          ]
+        },
+        {
+          "id": 1566547661,
+          "title": "11. Berdasarkan QS. Hud ayat 117, Allah Swt. tidak akan membinasakan suatu negeri secara zalim apabila penduduknya...",
+          "type": "radio",
+          "entry": 2139874985,
+          "options": [
+            "Rutin mengadakan perayaan adat setiap tahun",
+            "Berbuat kebaikan dan melakukan perbaikan (mushlihun)",
+            "Memiliki benteng pertahanan yang sangat kuat",
+            "Memiliki jumlah penduduk yang sangat besar",
+            "Menguasai jalur perdagangan internasional"
+          ]
+        },
+        {
+          "id": 14425279,
+          "title": "12. Dalam QS. Al-Isra ayat 23, Allah Swt. melarang seorang anak mengucapkan kata \"ah\" (uffin) kepada kedua orang tuanya. Makna larangan tersebut mencakup...",
+          "type": "radio",
+          "entry": 1355205319,
+          "options": [
+            "Larangan menyampaikan pendapat berbeda meskipun dengan cara santun",
+            "Larangan tinggal terpisah dari rumah orang tua setelah menikah",
+            "Larangan berbicara dengan bahasa daerah di hadapan orang tua",
+            "Segala bentuk ucapan atau sikap kasar sekecil apa pun yang menyakiti hati orang tua",
+            "Kewajiban diam seribu bahasa ketika diajak berdiskusi oleh orang tua"
+          ]
+        },
+        {
+          "id": 2013104329,
+          "title": "13. Doa yang diajarkan dalam QS. Al-Isra ayat 24 untuk kedua orang tua adalah...",
+          "type": "radio",
+          "entry": 1010466406,
+          "options": [
+            "رَبَّنَا هَبْ لَنَا مِنْ أَزْوَاجِنَا وَذُرِّيَّاتِنَا قُرَّةَ أَعْيُنٍ",
+            "رَبِّ ارْحَمْهُمَا كَمَا رَبَّيَانِي صَغِيرًا",
+            "رَبَّنَا آتِنَا فِي الدُّنْيَا حَسَنَةً وَفِي الْآخِرَةِ حَسَنَةً",
+            "رَبِّ زِدْنِي عِلْمًا وَارْزُقْنِي فَهْمًا",
+            "رَبِّ اشْرَحْ لِي صَدْرِي وَيَسِّرْ لِي أَمْرِي"
+          ]
+        },
+        {
+          "id": 1434920055,
+          "title": "14. Nasihat pertama yang disampaikan Luqman kepada anaknya dalam QS. Luqman ayat 13 adalah...",
+          "type": "radio",
+          "entry": 134344049,
+          "options": [
+            "Larangan mempersekutukan Allah (syirik) karena syirik adalah kezaliman yang besar",
+            "Menegakkan salat lima waktu secara berjamaah",
+            "Perintah bersikap tawaduk dan tidak berjalan dengan angkuh",
+            "Perintah beramar makruf nahi mungkar dengan penuh kesabaran",
+            "Kewajiban berbakti kepada ibu yang telah mengandung dalam keadaan lemah"
+          ]
+        },
+        {
+          "id": 214160,
+          "title": "15. Dalam QS. Luqman ayat 15, apabila kedua orang tua memaksa seorang anak untuk mempersekutukan Allah dengan sesuatu yang tidak ada ilmunya, sikap yang diperintahkan Al-Qur'an adalah...",
+          "type": "radio",
+          "entry": 1893902418,
+          "options": [
+            "Memarahi orang tua agar sadar akan kesalahannya",
+            "Memutus hubungan silaturahmi dan meninggalkan keduanya",
+            "Menaati perintah orang tua demi menjaga kerukunan keluarga",
+            "Tidak menaati ajakan syiriknya, namun tetap mempergauli keduanya di dunia dengan baik (ma'ruf)",
+            "Mengikuti kemauan mereka secara lahiriah saja"
+          ]
+        },
+        {
+          "id": 942158143,
+          "title": "16. Berdasarkan QS. Al-Jumu’ah ayat 9, kewajiban utama seorang mukmin ketika azan salat Jumat telah dikumandangkan adalah...",
+          "type": "radio",
+          "entry": 1976499825,
+          "options": [
+            "Bersiap-siap melakukan perjalanan jauh setelah salat",
+            "Menyelesaikan seluruh transaksi perdagangan terlebih dahulu",
+            "Bersedekah kepada fakir miskin di sekitar masjid",
+            "Menutup toko setelah khotbah pertama selesai dibacakan",
+            "Segera berzikir mengingat Allah dan meninggalkan jual beli"
+          ]
+        },
+        {
+          "id": 1039629028,
+          "title": "17. Pesan utama yang terkandung dalam QS. Al-Jumu’ah ayat 10 setelah selesai menunaikan salat Jumat adalah...",
+          "type": "radio",
+          "entry": 349062853,
+          "options": [
+            "Beristirahat total dari segala aktivitas duniawi",
+            "Bertebaran di muka bumi untuk mencari karunia Allah dan banyak mengingat-Nya",
+            "Berdiam diri di dalam masjid hingga waktu Asar tiba",
+            "Membahas strategi perdagangan di serambi masjid",
+            "Mengadakan jamuan makan bersama di lingkungan masyarakat"
+          ]
+        },
+        {
+          "id": 1775488735,
+          "title": "18. QS. Al-Qashash ayat 77 mengajarkan konsep keseimbangan hidup (tawazun) bagi seorang muslim, yaitu...",
+          "type": "radio",
+          "entry": 343657017,
+          "options": [
+            "Mengutamakan kesuksesan dunia terlebih dahulu sebelum memikirkan akhirat",
+            "Mengejar kebahagiaan negeri akhirat tanpa melupakan bagian kenikmatan di dunia",
+            "Fokus beribadah akhirat saja dan meninggalkan urusan dunia sepenuhnya",
+            "Membagi waktu secara kaku antara pagi untuk dunia dan malam untuk tidur",
+            "Menyerahkan seluruh harta kepada negara agar terhindar dari sifat tamak"
+          ]
+        },
+        {
+          "id": 1850245512,
+          "title": "19. Redaksi larangan mendekati zina dalam QS. Al-Isra ayat 32 berbunyi وَلَا تَقْرَبُوا الزِّنَا. Penggunaan kata “janganlah kamu mendekati” mengandung hikmah...",
+          "type": "radio",
+          "entry": 889116710,
+          "options": [
+            "Pergaulan bebas diperbolehkan selama tidak sampai pada perbuatan zina",
+            "Larangan zina bersifat anjuran moral tanpa sanksi hukum",
+            "Segala jalan, sarana, dan perbuatan yang mengarah pada zina sudah diharamkan sejak awal",
+            "Hukuman zina hanya berlaku bagi orang yang sudah menikah",
+            "Perbuatan zina hanya dilarang apabila dilakukan di tempat umum"
+          ]
+        },
+        {
+          "id": 1829486897,
+          "title": "20. Dalam QS. Al-Baqarah ayat 169, setan selalu menyuruh manusia melakukan dua hal utama yang menjerumuskan ke dalam kesesatan, yaitu...",
+          "type": "radio",
+          "entry": 240735150,
+          "options": [
+            "Melakukan riba dan mengurangi takaran timbangan",
+            "Memutuskan silaturahmi dan enggan membayar zakat",
+            "Perbuatan keji (al-fahsya’) dan mungkar (al-munkar), serta mengatakan terhadap Allah apa yang tidak diketahui",
+            "Bermalas-malasan bekerja dan menunda-nunda waktu salat",
+            "Berlebihan dalam makan dan minum serta suka berdebat"
+          ]
+        }
+      ]
+    },
+    {
+      "title": "BAGIAN II: PILIHAN GANDA KOMPLEKS / MCMA (Nomor 21 - 30)",
+      "items": [
+        {
+          "id": 620838672,
+          "title": "21. Berdasarkan QS. Al-Baqarah ayat 30–32, manakah pernyataan yang benar mengenai dialog antara Allah Swt. dan para malaikat? (Pilih 3 jawaban yang benar)",
+          "type": "checkbox",
+          "entry": 769809352,
+          "options": [
+            "Malaikat mengakui keterbatasan ilmu mereka kecuali apa yang telah diajarkan Allah Swt.",
+            "Nabi Adam a.s. menciptakan bahasa sendiri tanpa bimbingan wahyu",
+            "Malaikat sempat mempertanyakan penciptaan manusia karena dikhawatirkan akan berbuat kerusakan dan menumpahkan darah",
+            "Allah Swt. mengajarkan nama-nama benda seluruhnya kepada Nabi Adam a.s.",
+            "Malaikat menolak sujud penghormatan kepada Nabi Adam a.s. karena merasa lebih mulia"
+          ]
+        },
+        {
+          "id": 1022516691,
+          "title": "22. Perhatikan fase-fase perkembangan janin manusia dalam QS. Al-Mu’minun ayat 12–14. Manakah istilah dan makna yang sesuai dengan ayat tersebut? (Pilih 3 jawaban yang benar)",
+          "type": "checkbox",
+          "entry": 1200772888,
+          "options": [
+            "Mudghah: tulang belulang yang telah mengeras sempurna",
+            "Izaman: ruh yang ditiupkan pada usia kandungan tujuh bulan",
+            "Sulalah min thin: saripati yang berasal dari tanah",
+            "‘Alaqah: segumpal darah yang melekat di dinding rahim",
+            "Nutfah: air mani yang disimpan dalam tempat yang kokoh (rahim)"
+          ]
+        },
+        {
+          "id": 1012220576,
+          "title": "23. Berdasarkan QS. At-Tahrim ayat 6 dan QS. Taha ayat 132, manakah tanggung jawab seorang kepala keluarga atau orang tua terhadap keluarganya? (Pilih 3 jawaban yang benar)",
+          "type": "checkbox",
+          "entry": 583927455,
+          "options": [
+            "Menanggung seluruh dosa anak yang sudah balig dan berakal sehat",
+            "Memerintahkan keluarga untuk mendirikan salat secara istikamah",
+            "Memaksa anggota keluarga bekerja keras hingga melalaikan waktu salat",
+            "Bersabar dalam membimbing dan mengajak keluarga menjalankan ibadah",
+            "Menjaga diri dan anggota keluarga dari perbuatan yang menjerumuskan ke neraka"
+          ]
+        },
+        {
+          "id": 1384230757,
+          "title": "24. Manakah perilaku yang mencerminkan pengamalan QS. An-Nisa ayat 36 dalam kehidupan bermasyarakat? (Pilih 3 jawaban yang benar)",
+          "type": "checkbox",
+          "entry": 1939123269,
+          "options": [
+            "Menjaga kerukunan dengan tetangga dekat maupun tetangga jauh",
+            "Menyantuni anak yatim dan membantu fakir miskin di lingkungan sekitar",
+            "Mengutamakan teman dekat saja dan mengabaikan musafir yang kehabisan bekal",
+            "Menyombongkan diri dan membanggakan harta kekayaan di hadapan orang lain",
+            "Berbakti kepada kedua orang tua dengan penuh kasih sayang"
+          ]
+        },
+        {
+          "id": 504638518,
+          "title": "25. Dalam QS. Al-Isra ayat 23–24, terdapat beberapa adab yang wajib diterapkan seorang anak kepada kedua orang tuanya. Manakah yang termasuk perintah dalam kedua ayat tersebut? (Pilih 3 jawaban yang benar)",
+          "type": "checkbox",
+          "entry": 425523716,
+          "options": [
+            "Membantah nasihat orang tua dengan suara keras apabila merasa pendapatnya lebih benar",
+            "Mendoakan orang tua hanya setelah keduanya wafat saja",
+            "Tidak membentak kedua orang tua ketika keduanya berusia lanjut",
+            "Mengucapkan perkataan yang mulia dan merendahkan diri dengan penuh kasih sayang",
+            "Tidak mengucapkan perkataan kasar seperti kata \"ah\" (uffin)"
+          ]
+        },
+        {
+          "id": 2123514129,
+          "title": "26. Nasihat Luqman kepada anaknya dalam QS. Luqman ayat 13–17 mencakup prinsip akidah, ibadah, dan akhlak sosial. Manakah yang termasuk isi nasihat pada rentang ayat tersebut? (Pilih 3 jawaban yang benar)",
+          "type": "checkbox",
+          "entry": 630104078,
+          "options": [
+            "Perintah melakukan perjalanan dagang ke negeri Syam setiap musim panas",
+            "Kesadaran bahwa setiap perbuatan sekecil biji sawi pasti dibalas oleh Allah Swt.",
+            "Larangan berteman dengan orang yang berbeda suku bangsa",
+            "Perintah mendirikan salat, menyuruh berbuat makruf, mencegah kemungkaran, dan bersabar",
+            "Larangan menyekutukan Allah Swt. (syirik)"
+          ]
+        },
+        {
+          "id": 1436160248,
+          "title": "27. Perhatikan kandungan hukum dan hikmah dalam QS. Al-Jumu’ah ayat 9–11. Manakah pernyataan yang tepat sesuai ayat tersebut? (Pilih 3 jawaban yang benar)",
+          "type": "checkbox",
+          "entry": 1061355549,
+          "options": [
+            "Transaksi jual beli wajib ditinggalkan saat azan salat Jumat telah dikumandangkan",
+            "Setelah salat Jumat selesai, umat Islam dianjurkan kembali berusaha mencari rezeki yang halal",
+            "Salat Jumat boleh digantikan dengan zikir di rumah apabila pasar sedang ramai",
+            "Ayat 11 menegur sebagian sahabat yang meninggalkan khotbah Nabi demi menyambut kafilah dagang",
+            "Bekerja mencari nafkah pada hari Jumat hukumnya haram sejak terbit fajar hingga terbenam matahari"
+          ]
+        },
+        {
+          "id": 40153798,
+          "title": "28. Berdasarkan QS. Al-Qashash ayat 77, manakah prinsip pengelolaan harta dan kehidupan yang diajarkan Allah Swt.? (Pilih 3 jawaban yang benar)",
+          "type": "checkbox",
+          "entry": 1004411385,
+          "options": [
+            "Berbuat baik kepada sesama sebagaimana Allah telah berbuat baik kepada manusia",
+            "Menimbun seluruh harta kekayaan karena itu murni hasil kecerdasan pribadi",
+            "Tidak melupakan bagian kenikmatan duniawi yang halal dan wajar",
+            "Melakukan kerusakan di muka bumi demi mengejar keuntungan ekonomi",
+            "Menggunakan anugerah harta untuk meraih kebahagiaan akhirat"
+          ]
+        },
+        {
+          "id": 1466868322,
+          "title": "29. Manakah bentuk perilaku preventif (pencegahan) yang sesuai dengan spirit larangan mendekati zina dalam QS. Al-Isra ayat 32? (Pilih 3 jawaban yang benar)",
+          "type": "checkbox",
+          "entry": 735173850,
+          "options": [
+            "Menjaga pandangan dan batasan pergaulan antara laki-laki dan perempuan yang bukan mahram",
+            "Tidak berdua-duaan (khalwat) di tempat sepi dengan lawan jenis yang bukan mahram",
+            "Berpacaran secara bebas selama masih dalam pengawasan teman sebaya",
+            "Menghindari konten pornografi di media sosial maupun internet",
+            "Menganggap pergaulan bebas sebagai hal wajar di era modern"
+          ]
+        },
+        {
+          "id": 923646032,
+          "title": "30. Ketentuan hukum pidana Islam (hudud) bagi pelaku zina ghairu muhshan (belum menikah) yang tercantum dalam QS. An-Nur ayat 2 adalah... (Pilih 3 jawaban yang benar)",
+          "type": "checkbox",
+          "entry": 1604311900,
+          "options": [
+            "Dirajam dengan batu hingga meninggal dunia di tempat tersembunyi",
+            "Pelaksanaan hukuman disaksikan oleh sekumpulan orang-orang yang beriman",
+            "Didera (dicambuk) masing-masing sebanyak seratus kali",
+            "Hukuman boleh diganti dengan denda uang apabila pelaku berasal dari keluarga terpandang",
+            "Pelaksanaan hukuman tidak boleh dipengaruhi oleh rasa belas kasihan yang menggugurkan hukum Allah"
+          ]
+        }
+      ]
+    },
+    {
+      "title": "BAGIAN III: PILIHAN GANDA KOMPLEKS KATEGORI (Nomor 31 - 40)",
+      "items": []
+    },
+    {
+      "title": "Soal Nomor 31. Tentukan kesesuaian pernyataan berikut dengan kandungan QS. Al-Baqarah ayat 30–32 dan QS. Az-Zariyat ayat 56!",
+      "items": [
+        {
+          "id": 1797152408,
+          "title": "31a. Para malaikat merasa lebih berhak menjadi khalifah karena mengetahui seluruh nama benda.",
+          "type": "radio",
+          "entry": 1085413615,
+          "options": [
+            "Sesuai",
+            "Tidak Sesuai"
+          ]
+        },
+        {
+          "id": 681176256,
+          "title": "31b. Manusia diangkat menjadi khalifah di bumi untuk mengelola alam sesuai ketentuan Allah Swt.",
+          "type": "radio",
+          "entry": 997527007,
+          "options": [
+            "Sesuai",
+            "Tidak Sesuai"
+          ]
+        },
+        {
+          "id": 1663493422,
+          "title": "31c. Jin dan manusia diciptakan oleh Allah Swt. semata-mata untuk beribadah kepada-Nya.",
+          "type": "radio",
+          "entry": 2039128828,
+          "options": [
+            "Sesuai",
+            "Tidak Sesuai"
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Soal Nomor 32. Kelompokkan tahapan penciptaan manusia berikut berdasarkan QS. Al-Mu’minun ayat 12–14!",
+      "items": [
+        {
+          "id": 1445150471,
+          "title": "32a. Saripati tanah (sulalah min thin) dan nutfah",
+          "type": "radio",
+          "entry": 244265675,
+          "options": [
+            "Fase Awal (Sebelum Tulang)",
+            "Fase Lanjutan (Pembentukan Fisik Sempurna)"
+          ]
+        },
+        {
+          "id": 1613782710,
+          "title": "32b. Penciptaan tulang belulang (‘izaman) yang kemudian dibungkus dengan daging (lahman)",
+          "type": "radio",
+          "entry": 225834343,
+          "options": [
+            "Fase Awal (Sebelum Tulang)",
+            "Fase Lanjutan (Pembentukan Fisik Sempurna)"
+          ]
+        },
+        {
+          "id": 1684527363,
+          "title": "32c. ‘Alaqah (segumpal darah) dan mudghah (segumpal daging)",
+          "type": "radio",
+          "entry": 97478091,
+          "options": [
+            "Fase Awal (Sebelum Tulang)",
+            "Fase Lanjutan (Pembentukan Fisik Sempurna)"
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Soal Nomor 33. Tentukan nilai kebenaran pernyataan berikut berdasarkan kandungan QS. An-Nahl ayat 78!",
+      "items": [
+        {
+          "id": 2052575985,
+          "title": "33a. Pendengaran, penglihatan, dan hati nurani adalah sarana utama manusia memperoleh pengetahuan.",
+          "type": "radio",
+          "entry": 726967920,
+          "options": [
+            "Benar",
+            "Salah"
+          ]
+        },
+        {
+          "id": 1712620422,
+          "title": "33b. Manusia lahir ke dunia dalam keadaan telah membawa bekal ilmu pengetahuan secara otomatis.",
+          "type": "radio",
+          "entry": 1030587753,
+          "options": [
+            "Benar",
+            "Salah"
+          ]
+        },
+        {
+          "id": 700647730,
+          "title": "33c. Tujuan pemberian indra dan hati adalah agar manusia bersyukur kepada Allah Swt.",
+          "type": "radio",
+          "entry": 1073580419,
+          "options": [
+            "Benar",
+            "Salah"
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Soal Nomor 34. Klasifikasikan perintah dan tanggung jawab keluarga berikut sesuai sumber ayatnya!",
+      "items": [
+        {
+          "id": 1056016493,
+          "title": "34a. Memerintahkan keluarga untuk mendirikan salat dan bersabar dalam melaksanakannya.",
+          "type": "radio",
+          "entry": 1804094729,
+          "options": [
+            "QS. At-Tahrim: 6",
+            "QS. Taha: 132"
+          ]
+        },
+        {
+          "id": 1310487861,
+          "title": "34b. Menjaga diri sendiri dan keluarga dari siksa api neraka yang bahan bakarnya manusia dan batu.",
+          "type": "radio",
+          "entry": 725984898,
+          "options": [
+            "QS. At-Tahrim: 6",
+            "QS. Taha: 132"
+          ]
+        },
+        {
+          "id": 692995475,
+          "title": "34c. Penegasan bahwa Allah tidak meminta rezeki kepadamu, melainkan Dialah yang memberi rezeki.",
+          "type": "radio",
+          "entry": 1752512582,
+          "options": [
+            "QS. At-Tahrim: 6",
+            "QS. Taha: 132"
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Soal Nomor 35. Tentukan kategori sikap berikut berdasarkan QS. Al-An’am ayat 70 dan QS. Hud ayat 117–119!",
+      "items": [
+        {
+          "id": 1841924571,
+          "title": "35a. Menjadikan agama sebagai bahan permainan dan senda gurau karena tertipu kehidupan dunia.",
+          "type": "radio",
+          "entry": 77493790,
+          "options": [
+            "Sikap Terpuji (Diperintahkan)",
+            "Sikap Tercela (Dilarang)"
+          ]
+        },
+        {
+          "id": 71330582,
+          "title": "35b. Tetap memberi peringatan dengan Al-Qur'an agar setiap jiwa tidak terjerumus akibat perbuatannya.",
+          "type": "radio",
+          "entry": 352492134,
+          "options": [
+            "Sikap Terpuji (Diperintahkan)",
+            "Sikap Tercela (Dilarang)"
+          ]
+        },
+        {
+          "id": 246530658,
+          "title": "35c. Melakukan perbaikan sosial dan amal saleh di tengah masyarakat agar negeri terhindar dari kehancuran.",
+          "type": "radio",
+          "entry": 2117768348,
+          "options": [
+            "Sikap Terpuji (Diperintahkan)",
+            "Sikap Tercela (Dilarang)"
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Soal Nomor 36. Tentukan kesesuaian perilaku seorang anak terhadap orang tua berikut dengan QS. Al-Isra ayat 23–24!",
+      "items": [
+        {
+          "id": 1891714549,
+          "title": "36a. Merawat kedua orang tua yang sudah lanjut usia dengan penuh kesabaran dan kelembutan.",
+          "type": "radio",
+          "entry": 300190645,
+          "options": [
+            "Sesuai",
+            "Tidak Sesuai"
+          ]
+        },
+        {
+          "id": 1605244676,
+          "title": "36b. Senantiasa mendoakan agar Allah menyayangi kedua orang tua sebagaimana mereka menyayangi di waktu kecil.",
+          "type": "radio",
+          "entry": 665629459,
+          "options": [
+            "Sesuai",
+            "Tidak Sesuai"
+          ]
+        },
+        {
+          "id": 204432813,
+          "title": "36c. Mengeluh dengan nada kesal saat diminta bantuan oleh orang tua ketika sedang sibuk.",
+          "type": "radio",
+          "entry": 771079971,
+          "options": [
+            "Sesuai",
+            "Tidak Sesuai"
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Soal Nomor 37. Kategorikan pokok nasihat berikut berdasarkan urutan ayat dalam QS. Luqman ayat 13–17!",
+      "items": [
+        {
+          "id": 2049165192,
+          "title": "37a. Mendirikan salat, beramar makruf nahi mungkar, dan bersabar atas cobaan yang menimpa.",
+          "type": "radio",
+          "entry": 1434712750,
+          "options": [
+            "Akidah & Syukur (Ayat 13–15)",
+            "Amal & Akhlak Sosial (Ayat 16–17)"
+          ]
+        },
+        {
+          "id": 1468038419,
+          "title": "37b. Larangan berbuat syirik karena syirik merupakan kezaliman yang sangat besar.",
+          "type": "radio",
+          "entry": 442571433,
+          "options": [
+            "Akidah & Syukur (Ayat 13–15)",
+            "Amal & Akhlak Sosial (Ayat 16–17)"
+          ]
+        },
+        {
+          "id": 12770145,
+          "title": "37c. Kewajiban bersyukur kepada Allah dan berterima kasih kepada kedua orang tua (terutama ibu).",
+          "type": "radio",
+          "entry": 253376281,
+          "options": [
+            "Akidah & Syukur (Ayat 13–15)",
+            "Amal & Akhlak Sosial (Ayat 16–17)"
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Soal Nomor 38. Tentukan nilai kebenaran pernyataan berikut mengenai etos kerja dan ibadah berdasarkan QS. Al-Jumu’ah ayat 9–11 dan QS. Al-Qashash ayat 77!",
+      "items": [
+        {
+          "id": 698040034,
+          "title": "38a. Ketika azan salat Jumat berkumandang, kegiatan jual beli harus dihentikan sementara untuk menunaikan salat.",
+          "type": "radio",
+          "entry": 636554775,
+          "options": [
+            "Benar",
+            "Salah"
+          ]
+        },
+        {
+          "id": 1390973156,
+          "title": "38b. Islam melarang umatnya mencari keuntungan duniawi sepenuhnya karena dapat melalaikan akhirat.",
+          "type": "radio",
+          "entry": 987063138,
+          "options": [
+            "Benar",
+            "Salah"
+          ]
+        },
+        {
+          "id": 1904453903,
+          "title": "38c. Keseimbangan hidup diraih dengan mengutamakan bekal akhirat tanpa melupakan bagian kenikmatan dunia.",
+          "type": "radio",
+          "entry": 1687004847,
+          "options": [
+            "Benar",
+            "Salah"
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Soal Nomor 39. Klasifikasikan bentuk sanksi dan sikap dalam penegakan hukum zina berikut berdasarkan QS. Al-Isra ayat 32 dan QS. An-Nur ayat 2!",
+      "items": [
+        {
+          "id": 206348288,
+          "title": "39a. Pezina perempuan dan pezina laki-laki masing-masing didera sebanyak seratus kali cambukan.",
+          "type": "radio",
+          "entry": 1181019630,
+          "options": [
+            "Prinsip Pencegahan / Larangan",
+            "Ketentuan Hukuman / Pelaksanaan"
+          ]
+        },
+        {
+          "id": 170311986,
+          "title": "39b. Zina merupakan perbuatan yang sangat keji (fahisyah) dan jalan yang paling buruk (sa’a sabila).",
+          "type": "radio",
+          "entry": 100712154,
+          "options": [
+            "Prinsip Pencegahan / Larangan",
+            "Ketentuan Hukuman / Pelaksanaan"
+          ]
+        },
+        {
+          "id": 556679151,
+          "title": "39c. Hukuman cambuk dilaksanakan secara terbuka dengan disaksikan oleh sekumpulan orang beriman.",
+          "type": "radio",
+          "entry": 1269644338,
+          "options": [
+            "Prinsip Pencegahan / Larangan",
+            "Ketentuan Hukuman / Pelaksanaan"
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Soal Nomor 40. Tentukan apakah pernyataan berikut merupakan Langkah Setan (QS. Al-Baqarah: 169) atau Perintah Allah Swt. (QS. An-Nisa: 36)!",
+      "items": [
+        {
+          "id": 642686132,
+          "title": "40a. Berbuat baik kepada orang tua, kerabat, anak yatim, orang miskin, dan tetangga.",
+          "type": "radio",
+          "entry": 1405526008,
+          "options": [
+            "Langkah Setan",
+            "Perintah Allah Swt."
+          ]
+        },
+        {
+          "id": 1512530531,
+          "title": "40b. Menyuruh manusia berbuat keji (fahsya’) dan perbuatan mungkar.",
+          "type": "radio",
+          "entry": 352079565,
+          "options": [
+            "Langkah Setan",
+            "Perintah Allah Swt."
+          ]
+        },
+        {
+          "id": 116618883,
+          "title": "40c. Mendorong manusia berkata atas nama Allah tanpa dasar ilmu pengetahuan.",
+          "type": "radio",
+          "entry": 1647618084,
+          "options": [
+            "Langkah Setan",
+            "Perintah Allah Swt."
+          ]
+        }
+      ]
+    },
+    {
+      "title": "BAGIAN IV: ESSAY / URAIAN (Nomor 41 - 45)",
+      "items": [
+        {
+          "id": 1584738870,
+          "title": "41. Jelaskan hubungan antara fungsi manusia sebagai khalifah di muka bumi (QS. Al-Baqarah: 30–32) dengan tujuan penciptaan manusia untuk beribadah (QS. Az-Zariyat: 56)!",
+          "type": "essay",
+          "entry": 1179285893
+        },
+        {
+          "id": 2037337083,
+          "title": "42. QS. An-Nahl ayat 78 menyebutkan bahwa manusia dilahirkan tanpa mengetahui sesuatu pun, lalu Allah membekali pendengaran, penglihatan, dan hati nurani. Analisislah bagaimana ketiga potensi tersebut harus digunakan oleh seorang pelajar di era digital!",
+          "type": "essay",
+          "entry": 1466822182
+        },
+        {
+          "id": 1414640453,
+          "title": "43. Bagaimana cara menerapkan pesan QS. Luqman ayat 15 ketika seorang anak menghadapi perbedaan prinsip atau perintah dari orang tua yang bertentangan dengan akidah/syariat Islam?",
+          "type": "essay",
+          "entry": 1637130578
+        },
+        {
+          "id": 291952069,
+          "title": "44. Jelaskan konsep keseimbangan antara urusan dunia dan akhirat yang terkandung dalam QS. Al-Jumu’ah ayat 9–10 dan QS. Al-Qashash ayat 77!",
+          "type": "essay",
+          "entry": 149818368
+        },
+        {
+          "id": 775267890,
+          "title": "45. Mengapa Al-Qur'an dalam QS. Al-Isra ayat 32 menggunakan redaksi \"Janganlah kamu mendekati zina\" alih-alih \"Janganlah kamu berzina\", dan bagaimana relevansinya dengan pengaturan hukuman tegas dalam QS. An-Nur ayat 2?",
+          "type": "essay",
+          "entry": 1412243620
+        }
+      ]
+    }
+  ]
+}
